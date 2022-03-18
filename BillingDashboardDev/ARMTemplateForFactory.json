@@ -1,0 +1,923 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "BillingDashboardDev"
+		},
+		"DashboardSQLService_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'DashboardSQLService'"
+		},
+		"AzureManagementApi_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://management.azure.com/"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ExtractAzureBilling')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "OAuthToken",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('https://login.microsoftonline.com/', pipeline().globalParameters.tenantId, '/oauth2/token')",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/x-www-form-urlencoded"
+							},
+							"body": {
+								"value": "@concat('grant_type=client_credentials&client_id=', pipeline().globalParameters.client_id, '&client_secret=', pipeline().globalParameters.client_secret, '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set access_token",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "OAuthToken",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "access_token",
+							"value": {
+								"value": "@concat('Bearer ', activity('OAuthToken').output['access_token'])",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Copy Subscribers",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Set access_token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET",
+									"additionalHeaders": {
+										"value": "@{concat('Authorization:', variables('access_token'))}",
+										"type": "Expression"
+									},
+									"requestTimeout": ""
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "upsert",
+								"upsertSettings": {
+									"useTempDB": true,
+									"keys": [
+										"Id"
+									]
+								},
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "[['id']"
+										},
+										"sink": {
+											"name": "Id",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['authorizationSource']"
+										},
+										"sink": {
+											"name": "AuthorizationSource",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['subscriptionId']"
+										},
+										"sink": {
+											"name": "SubscriptionId",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['displayName']"
+										},
+										"sink": {
+											"name": "DisplayName",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['state']"
+										},
+										"sink": {
+											"name": "State",
+											"type": "String"
+										}
+									}
+								],
+								"collectionReference": "$['value']"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Subscribers",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "SQL_Subscribers",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "SQL Subscribers",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Copy Subscribers",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "SQL_Subscribers",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "SQL Subscribers",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('SQL Subscribers').output['value']",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy Resource Groups",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "JsonSource",
+											"additionalColumns": [
+												{
+													"name": "subscriptionId",
+													"value": {
+														"value": "@item()['SubscriptionId']",
+														"type": "Expression"
+													}
+												}
+											],
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET",
+												"additionalHeaders": {
+													"value": "@{concat('Authorization:', variables('access_token'))}",
+													"type": "Expression"
+												},
+												"requestTimeout": ""
+											},
+											"formatSettings": {
+												"type": "JsonReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"writeBehavior": "upsert",
+											"upsertSettings": {
+												"useTempDB": true,
+												"keys": [
+													"Id"
+												]
+											},
+											"sqlWriterUseTableLock": false,
+											"disableMetricsCollection": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['id']"
+													},
+													"sink": {
+														"name": "Id",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "[['name']"
+													},
+													"sink": {
+														"name": "Name",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "[['location']"
+													},
+													"sink": {
+														"name": "Location",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "$['subscriptionId']"
+													},
+													"sink": {
+														"name": "SubscriptionId",
+														"type": "String"
+													}
+												}
+											],
+											"collectionReference": "$['value']",
+											"mapComplexValuesToString": true
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ResourceGroups",
+											"type": "DatasetReference",
+											"parameters": {
+												"subscriptionId": {
+													"value": "@item()['SubscriptionId']",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "SQL_ResourceGroups",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "SQL Resource Groups",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "ForEach1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "SQL_ResourceGroups",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach2",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "SQL Resource Groups",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('SQL Resource Groups').output['value']",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "JsonSource",
+											"additionalColumns": [
+												{
+													"name": "resourceGroupId",
+													"value": {
+														"value": "@item()['Id']",
+														"type": "Expression"
+													}
+												}
+											],
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET",
+												"additionalHeaders": {
+													"value": "@{concat('Authorization:', variables('access_token'))}",
+													"type": "Expression"
+												},
+												"requestTimeout": ""
+											},
+											"formatSettings": {
+												"type": "JsonReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['id']"
+													},
+													"sink": {
+														"name": "Id",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "[['name']"
+													},
+													"sink": {
+														"name": "Name",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "[['type']"
+													},
+													"sink": {
+														"name": "Type",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "[['kind']"
+													},
+													"sink": {
+														"name": "Kind",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "[['location']"
+													},
+													"sink": {
+														"name": "Location",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "$['resourceGroupId']"
+													},
+													"sink": {
+														"name": "ResourceGroupId",
+														"type": "String"
+													}
+												}
+											],
+											"collectionReference": "$['value']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "Resources",
+											"type": "DatasetReference",
+											"parameters": {
+												"resourceGroupPath": {
+													"value": "@item()['Id']",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "SQL_Resources",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"access_token": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-03-18T14:52:37Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Subscribers')]",
+				"[concat(variables('factoryId'), '/datasets/SQL_Subscribers')]",
+				"[concat(variables('factoryId'), '/datasets/SQL_ResourceGroups')]",
+				"[concat(variables('factoryId'), '/datasets/ResourceGroups')]",
+				"[concat(variables('factoryId'), '/datasets/Resources')]",
+				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ResourceGroups')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureManagementApi",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"subscriptionId": {
+						"type": "string",
+						"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": {
+							"value": "@concat('subscriptions/', dataset().subscriptionId,'/resourcegroups?api-version=2017-05-10')",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"value": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "string"
+									},
+									"authorizationSource": {
+										"type": "string"
+									},
+									"managedByTenants": {
+										"type": "array"
+									},
+									"subscriptionId": {
+										"type": "string"
+									},
+									"tenantId": {
+										"type": "string"
+									},
+									"displayName": {
+										"type": "string"
+									},
+									"state": {
+										"type": "string"
+									},
+									"subscriptionPolicies": {
+										"type": "object",
+										"properties": {
+											"locationPlacementId": {
+												"type": "string"
+											},
+											"quotaId": {
+												"type": "string"
+											},
+											"spendingLimit": {
+												"type": "string"
+											}
+										}
+									}
+								}
+							}
+						},
+						"count": {
+							"type": "object",
+							"properties": {
+								"type": {
+									"type": "string"
+								},
+								"value": {
+									"type": "integer"
+								}
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Resources')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureManagementApi",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"resourceGroupPath": {
+						"type": "string",
+						"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": {
+							"value": "@concat(dataset().resourceGroupPath, '/resources?api-version=2021-04-01')",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"value": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "string"
+									},
+									"name": {
+										"type": "string"
+									},
+									"type": {
+										"type": "string"
+									},
+									"sku": {
+										"type": "object",
+										"properties": {
+											"name": {
+												"type": "string"
+											},
+											"tier": {
+												"type": "string"
+											},
+											"size": {
+												"type": "string"
+											},
+											"family": {
+												"type": "string"
+											},
+											"capacity": {
+												"type": "integer"
+											}
+										}
+									},
+									"kind": {
+										"type": "string"
+									},
+									"location": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SQL_ResourceGroups')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DashboardSQLService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "SubscriptionId",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Location",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ResourceGroups"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SQL_Resources')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DashboardSQLService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ResourceGroupId",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Type",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Kind",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Location",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Resources"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SQL_Subscribers')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DashboardSQLService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "AuthorizationSource",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Subscriptions"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Subscribers')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureManagementApi",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": "subscriptions?api-version=2020-01-01"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"value": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "string"
+									},
+									"name": {
+										"type": "string"
+									},
+									"location": {
+										"type": "string"
+									},
+									"properties": {
+										"type": "object",
+										"properties": {
+											"provisioningState": {
+												"type": "string"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureManagementApi')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HttpServer",
+				"typeProperties": {
+					"url": "[parameters('AzureManagementApi_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DashboardSQLService')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('DashboardSQLService_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
