@@ -5,7 +5,14 @@
 			{
 				"name": "OAuthToken",
 				"type": "WebActivity",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "AzureKeyValue Secret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -24,7 +31,7 @@
 						"Content-Type": "application/x-www-form-urlencoded"
 					},
 					"body": {
-						"value": "@concat('grant_type=client_credentials&client_id=', pipeline().globalParameters.client_id, '&client_secret=', pipeline().globalParameters.client_secret, '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
+						"value": "@concat('grant_type=client_credentials&client_id=', pipeline().globalParameters.client_id, '&client_secret=', activity('AzureKeyValue Secret').output['value'], '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
 						"type": "Expression"
 					}
 				}
@@ -503,10 +510,37 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "AzureKeyValue Secret",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_secret_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
 			}
 		],
 		"variables": {
 			"access_token": {
+				"type": "String"
+			},
+			"client_secret": {
 				"type": "String"
 			}
 		},
