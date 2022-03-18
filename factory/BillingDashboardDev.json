@@ -13,6 +13,10 @@
 			"azurekeyvault_client_secret_secretidentifier": {
 				"type": "string",
 				"value": "https://jamesdevazurekeyvault.vault.azure.net/secrets/AzureCostDashboardSPSecret/b06a43c8e3ed4a43be8a89ac95c5d81c?api-version=7.0"
+			},
+			"azurekeyvault_client_id_secretidentifier": {
+				"type": "string",
+				"value": "asdfasdf"
 			}
 		}
 	},
