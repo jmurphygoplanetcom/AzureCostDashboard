@@ -1,0 +1,42 @@
+{
+	"name": "SQL_Costs",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DashboardSQLService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ResourceId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Cost",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "CostUSD",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "UsageDate",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Currency",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Costs"
+		}
+	}
+}
