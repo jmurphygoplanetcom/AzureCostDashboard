@@ -6,10 +6,6 @@
 				"type": "string",
 				"value": "ffa72070-63fa-4989-97c0-2d920cfbb85c"
 			},
-			"client_id": {
-				"type": "string",
-				"value": "7f24e01a-6480-4c87-bc82-e8dc79577f2a"
-			},
 			"azurekeyvault_client_secret_secretidentifier": {
 				"type": "string",
 				"value": "https://jamesdevazurekeyvault.vault.azure.net/secrets/AzureCostDashboardSPSecret/b06a43c8e3ed4a43be8a89ac95c5d81c?api-version=7.0"
