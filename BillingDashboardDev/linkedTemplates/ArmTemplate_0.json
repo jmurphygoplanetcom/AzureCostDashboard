@@ -66,6 +66,91 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Costs')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureManagementApi",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"resourceId": {
+						"type": "string",
+						"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": {
+							"value": "@concat(dataset().resourceId, '/providers/Microsoft.CostManagement/query?api-version=2021-10-01&$top=5000')",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"id": {
+							"type": "string"
+						},
+						"name": {
+							"type": "string"
+						},
+						"type": {
+							"type": "string"
+						},
+						"location": {
+							"type": "null"
+						},
+						"sku": {
+							"type": "null"
+						},
+						"eTag": {
+							"type": "null"
+						},
+						"properties": {
+							"type": "object",
+							"properties": {
+								"nextLink": {
+									"type": "null"
+								},
+								"columns": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"name": {
+												"type": "string"
+											},
+											"type": {
+												"type": "string"
+											}
+										}
+									}
+								},
+								"rows": {
+									"type": "array",
+									"items": {
+										"type": "array",
+										"items": {
+											"type": "number"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ResourceGroups')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -232,6 +317,53 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SQL_Costs')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DashboardSQLService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ResourceId",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Cost",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 4
+					},
+					{
+						"name": "CostUSD",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 4
+					},
+					{
+						"name": "UsageDate",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Currency",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Costs"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
 			]
 		},
 		{
@@ -994,6 +1126,161 @@
 								"resource": "https://vault.azure.net"
 							}
 						}
+					},
+					{
+						"name": "SQL Resources",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "ForEach2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "SQL_Resources",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach3",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "SQL Resources",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('SQL Resources').output['value']",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy data2",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "JsonSource",
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET",
+												"additionalHeaders": {
+													"value": "@{concat('Authorization:', variables('access_token'))}",
+													"type": "Expression"
+												},
+												"requestTimeout": ""
+											},
+											"formatSettings": {
+												"type": "JsonReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"writeBehavior": "upsert",
+											"upsertSettings": {
+												"useTempDB": true,
+												"keys": [
+													"ResourceId",
+													"UsageDate"
+												]
+											},
+											"sqlWriterUseTableLock": false,
+											"disableMetricsCollection": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "$[0]"
+													},
+													"sink": {
+														"name": "Cost"
+													}
+												},
+												{
+													"source": {
+														"path": "$[1]"
+													},
+													"sink": {
+														"name": "CostUSD"
+													}
+												},
+												{
+													"source": {
+														"path": "$[2]"
+													},
+													"sink": {
+														"name": "UsageDate"
+													}
+												},
+												{
+													"source": {
+														"path": "$[3]"
+													},
+													"sink": {
+														"name": "Currency"
+													}
+												}
+											],
+											"collectionReference": "$['properties']['rows']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "Costs",
+											"type": "DatasetReference",
+											"parameters": {
+												"resourceId": {
+													"value": "@item()['Id']",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "SQL_Costs",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
 					}
 				],
 				"policy": {
@@ -1012,9 +1299,11 @@
 				"[concat(variables('factoryId'), '/datasets/Subscribers')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_Subscribers')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_ResourceGroups')]",
+				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]",
 				"[concat(variables('factoryId'), '/datasets/ResourceGroups')]",
 				"[concat(variables('factoryId'), '/datasets/Resources')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]"
+				"[concat(variables('factoryId'), '/datasets/Costs')]",
+				"[concat(variables('factoryId'), '/datasets/SQL_Costs')]"
 			]
 		}
 	]
