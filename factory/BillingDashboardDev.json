@@ -1,0 +1,25 @@
+{
+	"name": "BillingDashboardDev",
+	"properties": {
+		"globalParameters": {
+			"tenantId": {
+				"type": "string",
+				"value": "ffa72070-63fa-4989-97c0-2d920cfbb85cZ"
+			},
+			"client_id": {
+				"type": "string",
+				"value": "7f24e01a-6480-4c87-bc82-e8dc79577f2a"
+			},
+			"client_secret": {
+				"type": "string",
+				"value": "f8~WSzT-gHSpJDFnz9zMKcp34m-Pt7Wtf9"
+			}
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "9f74a7f8-6f91-4e9e-b65d-03c6811b360b",
+		"tenantId": "ffa72070-63fa-4989-97c0-2d920cfbb85c"
+	}
+}
