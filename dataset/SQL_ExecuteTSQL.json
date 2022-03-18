@@ -1,0 +1,12 @@
+{
+	"name": "SQL_ExecuteTSQL",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DashboardSQLService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}

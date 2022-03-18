@@ -569,9 +569,6 @@
 		"variables": {
 			"access_token": {
 				"type": "String"
-			},
-			"client_secret": {
-				"type": "String"
 			}
 		},
 		"annotations": [],
