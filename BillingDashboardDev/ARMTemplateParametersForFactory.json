@@ -8,6 +8,9 @@
 		"DashboardSQLService_connectionString": {
 			"value": ""
 		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"value": "https://JamesDevAzureKeyVault.vault.azure.net/"
+		},
 		"AzureManagementApi_properties_typeProperties_url": {
 			"value": "https://management.azure.com/"
 		}

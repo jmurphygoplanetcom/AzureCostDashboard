@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'DashboardSQLService'"
 		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://JamesDevAzureKeyVault.vault.azure.net/"
+		},
 		"AzureManagementApi_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://management.azure.com/"
@@ -29,7 +33,14 @@
 					{
 						"name": "OAuthToken",
 						"type": "WebActivity",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "AzureKeyValue Secret",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -48,7 +59,7 @@
 								"Content-Type": "application/x-www-form-urlencoded"
 							},
 							"body": {
-								"value": "@concat('grant_type=client_credentials&client_id=', pipeline().globalParameters.client_id, '&client_secret=', pipeline().globalParameters.client_secret, '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
+								"value": "@concat('grant_type=client_credentials&client_id=', pipeline().globalParameters.client_id, '&client_secret=', activity('AzureKeyValue Secret').output['value'], '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
 								"type": "Expression"
 							}
 						}
@@ -533,6 +544,31 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "AzureKeyValue Secret",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": true,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@pipeline().globalParameters.azurekeyvault_client_secret_secretidentifier",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
 					}
 				],
 				"policy": {
@@ -541,6 +577,9 @@
 				},
 				"variables": {
 					"access_token": {
+						"type": "String"
+					},
+					"client_secret": {
 						"type": "String"
 					}
 				},
@@ -890,6 +929,19 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureKeyVault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzureManagementApi')]",

@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'DashboardSQLService'"
 		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://JamesDevAzureKeyVault.vault.azure.net/"
+		},
 		"AzureManagementApi_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://management.azure.com/"
@@ -44,6 +48,9 @@
 					},
 					"DashboardSQLService_connectionString": {
 						"value": "[parameters('DashboardSQLService_connectionString')]"
+					},
+					"AzureKeyVault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
 					},
 					"AzureManagementApi_properties_typeProperties_url": {
 						"value": "[parameters('AzureManagementApi_properties_typeProperties_url')]"
