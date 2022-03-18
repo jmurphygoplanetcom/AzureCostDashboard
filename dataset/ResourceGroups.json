@@ -1,0 +1,86 @@
+{
+	"name": "ResourceGroups",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureManagementApi",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"subscriptionId": {
+				"type": "string",
+				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "@concat('subscriptions/', dataset().subscriptionId,'/resourcegroups?api-version=2017-05-10')",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"authorizationSource": {
+								"type": "string"
+							},
+							"managedByTenants": {
+								"type": "array"
+							},
+							"subscriptionId": {
+								"type": "string"
+							},
+							"tenantId": {
+								"type": "string"
+							},
+							"displayName": {
+								"type": "string"
+							},
+							"state": {
+								"type": "string"
+							},
+							"subscriptionPolicies": {
+								"type": "object",
+								"properties": {
+									"locationPlacementId": {
+										"type": "string"
+									},
+									"quotaId": {
+										"type": "string"
+									},
+									"spendingLimit": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					}
+				},
+				"count": {
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string"
+						},
+						"value": {
+							"type": "integer"
+						}
+					}
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

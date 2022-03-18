@@ -1,0 +1,75 @@
+{
+	"name": "Resources",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureManagementApi",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"resourceGroupPath": {
+				"type": "string",
+				"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "@concat(dataset().resourceGroupPath, '/resources?api-version=2021-04-01')",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"type": {
+								"type": "string"
+							},
+							"sku": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": "string"
+									},
+									"tier": {
+										"type": "string"
+									},
+									"size": {
+										"type": "string"
+									},
+									"family": {
+										"type": "string"
+									},
+									"capacity": {
+										"type": "integer"
+									}
+								}
+							},
+							"kind": {
+								"type": "string"
+							},
+							"location": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,26 @@
+{
+	"name": "SQL_Subscribers",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DashboardSQLService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "AuthorizationSource",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Subscriptions"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
