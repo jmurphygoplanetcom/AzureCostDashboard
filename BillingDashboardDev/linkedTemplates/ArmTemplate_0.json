@@ -235,6 +235,24 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SQL_ExecuteTSQL')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DashboardSQLService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SQL_ResourceGroups')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -984,9 +1002,6 @@
 				},
 				"variables": {
 					"access_token": {
-						"type": "String"
-					},
-					"client_secret": {
 						"type": "String"
 					}
 				},
