@@ -67,7 +67,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Set access_token",
+						"activity": "Wait1",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -570,7 +570,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "ForEach2",
+						"activity": "Set access_token",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -634,7 +634,7 @@
 										"type": "HttpReadSettings",
 										"requestMethod": "POST",
 										"additionalHeaders": {
-											"value": "@{concat('Content-Type:application/json,Authorization:', variables('access_token'))}",
+											"value": "@{concat('Authorization:', variables('access_token'))}",
 											"type": "Expression"
 										},
 										"requestBody": {
@@ -720,6 +720,15 @@
 							]
 						}
 					]
+				}
+			},
+			{
+				"name": "Wait1",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 99999
 				}
 			}
 		],
