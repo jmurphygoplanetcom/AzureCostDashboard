@@ -634,11 +634,11 @@
 										"type": "HttpReadSettings",
 										"requestMethod": "POST",
 										"additionalHeaders": {
-											"value": "@{concat('Authorization:', variables('access_token'))}",
+											"value": "@{concat('Content-Type:application/json,Authorization:', variables('access_token'))}",
 											"type": "Expression"
 										},
 										"requestBody": {
-											"value": "@{concat('{\"type\":\"ActualCost\",\"dataSet\":{\"granularity\":\"Daily\",\"aggregation\":{\"totalCost\":{\"name\":\"Cost\",\"function\":\"Sum\"},\"totalCostUSD\":{\"name\":\"CostUSD\",\"function\":\"Sum\"}},\"sorting\":[{\"direction\":\"ascending\",\"name\":\"UsageDate\"}],\"filter\":{\"And\":[{\"Dimensions\":{\"Name\":\"PublisherType\",\"Operator\":\"In\",\"Values\":[\"azure\"]}},{\"Dimensions\":{\"Name\":\"ResourceId\",\"Operator\":\"In\",\"Values\":[\"', item()['Id'] ,'\"]}}]}}}')}",
+											"value": "@{json(concat('{\"type\":\"ActualCost\",\"dataSet\":{\"granularity\":\"Daily\",\"aggregation\":{\"totalCost\":{\"name\":\"Cost\",\"function\":\"Sum\"},\"totalCostUSD\":{\"name\":\"CostUSD\",\"function\":\"Sum\"}},\"sorting\":[{\"direction\":\"ascending\",\"name\":\"UsageDate\"}],\"filter\":{\"And\":[{\"Dimensions\":{\"Name\":\"PublisherType\",\"Operator\":\"In\",\"Values\":[\"azure\"]}},{\"Dimensions\":{\"Name\":\"ResourceId\",\"Operator\":\"In\",\"Values\":[\"', item()['Id'] ,'\"]}}]}}}'))}",
 											"type": "Expression"
 										},
 										"requestTimeout": ""
