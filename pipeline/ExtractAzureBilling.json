@@ -758,6 +758,14 @@
 												"type": "Expression"
 											}
 										}
+									},
+									"linkedServiceParameters": {
+										"source1": {
+											"schemaLinkedService": {
+												"resourceGroupId": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup",
+												"resourceId": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/JamesGeneralDevelopment/providers/Microsoft.ServiceBus/namespaces/jamesplanetdev"
+											}
+										}
 									}
 								},
 								"compute": {
