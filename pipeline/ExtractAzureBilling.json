@@ -634,7 +634,7 @@
 										"type": "HttpReadSettings",
 										"requestMethod": "POST",
 										"additionalHeaders": {
-											"value": "@{concat('Authorization:', variables('access_token'))}",
+											"value": "@{concat('Content-Type:application/json/\\nAuthorization:', variables('access_token'))}",
 											"type": "Expression"
 										},
 										"requestBody": {
