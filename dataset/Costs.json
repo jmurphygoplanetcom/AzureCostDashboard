@@ -6,9 +6,13 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"resourceId": {
+			"resourceGroupId": {
 				"type": "string",
 				"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
+			},
+			"resourceId": {
+				"type": "string",
+				"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/JamesGeneralDevelopment/providers/Microsoft.ServiceBus/namespaces/jamesplanetdev"
 			}
 		},
 		"annotations": [],
