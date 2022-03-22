@@ -39,7 +39,7 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     limit: 0,",
+				"     limit: 9999999,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> DataFlowCosts",
 				"DataFlowCosts parse(JsonResult = JsonResult ? (id as string,",
