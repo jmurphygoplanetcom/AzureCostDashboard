@@ -604,6 +604,9 @@
 					"transformations": [
 						{
 							"name": "parse1"
+						},
+						{
+							"name": "flatten1"
 						}
 					],
 					"scriptLines": [
@@ -620,10 +623,17 @@
 						"          type as string,",
 						"          properties as (nextLink as string,",
 						"          columns as (name as string,",
-						"     type as string)[])),",
+						"     type as string)[],",
+						"          rows as string[])),",
 						"     format: 'json',",
 						"     documentForm: 'singleDocument') ~> parse1",
-						"parse1 sink(allowSchemaDrift: true,",
+						"parse1 foldDown(unroll(JsonResult.properties.rows),",
+						"     mapColumn(",
+						"          blahblah = JsonResult.properties.rows",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flatten1",
+						"flatten1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
