@@ -85,7 +85,8 @@
 				"          CostUSD = costUSD,",
 				"          UsageDate = usageDate,",
 				"          Currency = currency,",
-				"          ResourceId = flattenResourceId",
+				"          ResourceId = flattenResourceId,",
+				"          Cost = cost",
 				"     )) ~> Costs"
 			]
 		}
