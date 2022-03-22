@@ -34,11 +34,12 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          JsonResult as string",
+				"          JsonResult as string,",
+				"          ResourceId as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     limit: 100,",
+				"     limit: 0,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> DataFlowCosts",
 				"DataFlowCosts parse(JsonResult = JsonResult ? (id as string,",
@@ -53,7 +54,7 @@
 				"parse1 foldDown(unroll(JsonResult.properties.rows),",
 				"     mapColumn(",
 				"          costRows = JsonResult.properties.rows,",
-				"          id = JsonResult.id",
+				"          flattenResourceId = ResourceId",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
@@ -79,7 +80,13 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 1,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> Costs"
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CostUSD = costUSD,",
+				"          UsageDate = usageDate,",
+				"          Currency = currency,",
+				"          ResourceId = flattenResourceId",
+				"     )) ~> Costs"
 			]
 		}
 	}

@@ -11,6 +11,10 @@
 			{
 				"name": "JsonResult",
 				"type": "nvarchar"
+			},
+			{
+				"name": "ResourceId",
+				"type": "nvarchar"
 			}
 		],
 		"typeProperties": {
