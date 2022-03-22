@@ -681,12 +681,12 @@
 									"userProperties": [],
 									"typeProperties": {
 										"dataflow": {
-											"referenceName": "dataflow1",
+											"referenceName": "ParseResourceCosts",
 											"type": "DataFlowReference",
 											"parameters": {},
 											"datasetParameters": {
-												"source1": {},
-												"sink1": {}
+												"DataFlowCosts": {},
+												"Costs": {}
 											}
 										},
 										"staging": {},
@@ -730,12 +730,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "dataflow1",
+								"referenceName": "ParseResourceCosts",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
+									"DataFlowCosts": {},
+									"Costs": {}
 								}
 							},
 							"staging": {},
@@ -764,7 +764,7 @@
 				"[concat(variables('factoryId'), '/datasets/SQL_Subscribers')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_ResourceGroups')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]",
-				"[concat(variables('factoryId'), '/dataflows/dataflow1')]",
+				"[concat(variables('factoryId'), '/dataflows/ParseResourceCosts')]",
 				"[concat(variables('factoryId'), '/datasets/ResourceGroups')]",
 				"[concat(variables('factoryId'), '/datasets/Resources')]"
 			]
@@ -1089,6 +1089,10 @@
 					{
 						"name": "JsonResult",
 						"type": "nvarchar"
+					},
+					{
+						"name": "ResourceId",
+						"type": "nvarchar"
 					}
 				],
 				"typeProperties": {
@@ -1326,7 +1330,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"name": "[concat(parameters('factoryName'), '/ParseResourceCosts')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1338,12 +1342,16 @@
 								"referenceName": "SQL_DataFlowCosts",
 								"type": "DatasetReference"
 							},
-							"name": "source1"
+							"name": "DataFlowCosts"
 						}
 					],
 					"sinks": [
 						{
-							"name": "sink1"
+							"dataset": {
+								"referenceName": "SQL_Costs",
+								"type": "DatasetReference"
+							},
+							"name": "Costs"
 						}
 					],
 					"transformations": [
@@ -1352,18 +1360,22 @@
 						},
 						{
 							"name": "flatten1"
+						},
+						{
+							"name": "derivedColumn1"
 						}
 					],
 					"scriptLines": [
 						"source(output(",
-						"          JsonResult as string",
+						"          JsonResult as string,",
+						"          ResourceId as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     limit: 100,",
+						"     limit: 9999999,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> source1",
-						"source1 parse(JsonResult = JsonResult ? (id as string,",
+						"     format: 'table') ~> DataFlowCosts",
+						"DataFlowCosts parse(JsonResult = JsonResult ? (id as string,",
 						"          name as string,",
 						"          type as string,",
 						"          properties as (nextLink as string,",
@@ -1374,23 +1386,46 @@
 						"     documentForm: 'singleDocument') ~> parse1",
 						"parse1 foldDown(unroll(JsonResult.properties.rows),",
 						"     mapColumn(",
-						"          blahblah = JsonResult.properties.rows",
+						"          costRows = JsonResult.properties.rows,",
+						"          flattenResourceId = ResourceId",
 						"     ),",
 						"     skipDuplicateMapInputs: false,",
 						"     skipDuplicateMapOutputs: false) ~> flatten1",
-						"flatten1 sink(allowSchemaDrift: true,",
+						"flatten1 derive(costRows = costRows,",
+						"          cost = toDouble(split(substring(costRows, 2, length(costRows)-2), ',')[1]),",
+						"          costUSD = toDouble(split(substring(costRows, 2, length(costRows)-2), ',')[2]),",
+						"          usageDate = toInteger(split(substring(costRows, 2, length(costRows)-2), ',')[3]),",
+						"          currency = split(substring(costRows, 2, length(costRows)-2), ',')[4]) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     input(",
+						"          ResourceId as string,",
+						"          Cost as decimal(18,4),",
+						"          CostUSD as decimal(18,4),",
+						"          UsageDate as integer,",
+						"          Currency as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     store: 'cache',",
-						"     format: 'inline',",
-						"     output: false,",
-						"     saveOrder: 1) ~> sink1"
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CostUSD = costUSD,",
+						"          UsageDate = usageDate,",
+						"          Currency = currency,",
+						"          ResourceId = flattenResourceId",
+						"     )) ~> Costs"
 					]
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SQL_DataFlowCosts')]"
+				"[concat(variables('factoryId'), '/datasets/SQL_DataFlowCosts')]",
+				"[concat(variables('factoryId'), '/datasets/SQL_Costs')]"
 			]
 		}
 	]
