@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Costs",
+						"referenceName": "SQL_DataFlowCosts",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -19,30 +19,27 @@
 			],
 			"transformations": [
 				{
-					"name": "derivedColumnCost"
+					"name": "parse1"
 				}
 			],
 			"scriptLines": [
 				"source(output(",
-				"          id as string,",
-				"          name as string,",
-				"          type as string,",
-				"          location as string,",
-				"          sku as string,",
-				"          eTag as string,",
-				"          properties as (nextLink as string, columns as (name as string, type as string)[], rows as double[][])",
+				"          JsonResult as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     limit: 100,",
-				"     ignoreNoFilesFound: false,",
-				"     documentForm: 'documentPerLine') ~> source1",
-				"source1 derive(Cost = toDecimal(at(properties.rows, 1))) ~> derivedColumnCost",
-				"derivedColumnCost sink(allowSchemaDrift: true,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source1 parse(JsonResult = JsonResult ? (id as string,",
+				"          properties as any),",
+				"     format: 'json',",
+				"     documentForm: 'documentPerLine') ~> parse1",
+				"parse1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     keys:['Cost'],",
+				"     keys:['JsonResult.id'],",
 				"     store: 'cache',",
 				"     format: 'inline',",
 				"     output: false,",
