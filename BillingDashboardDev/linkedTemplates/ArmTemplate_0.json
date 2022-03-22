@@ -75,9 +75,13 @@
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"resourceId": {
+					"resourceGroupId": {
 						"type": "string",
 						"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
+					},
+					"resourceId": {
+						"type": "string",
+						"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/JamesGeneralDevelopment/providers/Microsoft.ServiceBus/namespaces/jamesplanetdev"
 					}
 				},
 				"annotations": [],
@@ -367,6 +371,32 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SQL_DataFlowCosts')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DashboardSQLService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "JsonResult",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "DataFlowCosts"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SQL_ExecuteTSQL')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -551,6 +581,64 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SQL_DataFlowCosts",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "parse1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          JsonResult as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     limit: 100,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source1",
+						"source1 parse(JsonResult = JsonResult ? (id as string,",
+						"          name as string,",
+						"          type as string,",
+						"          properties as (nextLink as string,",
+						"          columns as (name as string,",
+						"     type as string)[])),",
+						"     format: 'json',",
+						"     documentForm: 'singleDocument') ~> parse1",
+						"parse1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     store: 'cache',",
+						"     format: 'inline',",
+						"     output: false,",
+						"     saveOrder: 1) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SQL_DataFlowCosts')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ExtractAzureBilling')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -621,7 +709,7 @@
 						"type": "Copy",
 						"dependsOn": [
 							{
-								"activity": "Set access_token",
+								"activity": "Wait1",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1080,7 +1168,14 @@
 					{
 						"name": "AzureKeyValue Secret",
 						"type": "WebActivity",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Data flow3",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -1105,7 +1200,14 @@
 					{
 						"name": "AzureKeyValue ClientId",
 						"type": "WebActivity",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Data flow3",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -1177,13 +1279,14 @@
 								"value": "@activity('SQL Resources').output['value']",
 								"type": "Expression"
 							},
+							"isSequential": true,
 							"activities": [
 								{
-									"name": "Copy data2",
-									"type": "Copy",
+									"name": "Data flow2",
+									"type": "ExecuteDataFlow",
 									"dependsOn": [],
 									"policy": {
-										"timeout": "7.00:00:00",
+										"timeout": "1.00:00:00",
 										"retry": 0,
 										"retryIntervalInSeconds": 30,
 										"secureOutput": false,
@@ -1191,95 +1294,70 @@
 									},
 									"userProperties": [],
 									"typeProperties": {
-										"source": {
-											"type": "JsonSource",
-											"storeSettings": {
-												"type": "HttpReadSettings",
-												"requestMethod": "GET",
-												"additionalHeaders": {
-													"value": "@{concat('Authorization:', variables('access_token'))}",
-													"type": "Expression"
-												},
-												"requestTimeout": ""
-											},
-											"formatSettings": {
-												"type": "JsonReadSettings"
+										"dataflow": {
+											"referenceName": "dataflow1",
+											"type": "DataFlowReference",
+											"parameters": {},
+											"datasetParameters": {
+												"source1": {},
+												"sink1": {}
 											}
 										},
-										"sink": {
-											"type": "AzureSqlSink",
-											"writeBehavior": "upsert",
-											"upsertSettings": {
-												"useTempDB": true,
-												"keys": [
-													"ResourceId",
-													"UsageDate"
-												]
-											},
-											"sqlWriterUseTableLock": false,
-											"disableMetricsCollection": false
+										"staging": {},
+										"compute": {
+											"coreCount": 8,
+											"computeType": "General"
 										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"mappings": [
-												{
-													"source": {
-														"path": "$[0]"
-													},
-													"sink": {
-														"name": "Cost"
-													}
-												},
-												{
-													"source": {
-														"path": "$[1]"
-													},
-													"sink": {
-														"name": "CostUSD"
-													}
-												},
-												{
-													"source": {
-														"path": "$[2]"
-													},
-													"sink": {
-														"name": "UsageDate"
-													}
-												},
-												{
-													"source": {
-														"path": "$[3]"
-													},
-													"sink": {
-														"name": "Currency"
-													}
-												}
-											],
-											"collectionReference": "$['properties']['rows']"
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "Costs",
-											"type": "DatasetReference",
-											"parameters": {
-												"resourceId": {
-													"value": "@item()['Id']",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "SQL_Costs",
-											"type": "DatasetReference",
-											"parameters": {}
-										}
-									]
+										"traceLevel": "Fine"
+									}
 								}
 							]
+						}
+					},
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "Data flow3",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 99999
+						}
+					},
+					{
+						"name": "Data flow3",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
 						}
 					}
 				],
@@ -1300,10 +1378,9 @@
 				"[concat(variables('factoryId'), '/datasets/SQL_Subscribers')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_ResourceGroups')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]",
+				"[concat(variables('factoryId'), '/dataflows/dataflow1')]",
 				"[concat(variables('factoryId'), '/datasets/ResourceGroups')]",
-				"[concat(variables('factoryId'), '/datasets/Resources')]",
-				"[concat(variables('factoryId'), '/datasets/Costs')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_Costs')]"
+				"[concat(variables('factoryId'), '/datasets/Resources')]"
 			]
 		}
 	]
