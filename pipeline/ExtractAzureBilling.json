@@ -520,14 +520,7 @@
 			{
 				"name": "AzureKeyValue Secret",
 				"type": "WebActivity",
-				"dependsOn": [
-					{
-						"activity": "Data flow3",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -551,14 +544,7 @@
 			{
 				"name": "AzureKeyValue ClientId",
 				"type": "WebActivity",
-				"dependsOn": [
-					{
-						"activity": "Data flow3",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -660,14 +646,7 @@
 			{
 				"name": "Wait1",
 				"type": "Wait",
-				"dependsOn": [
-					{
-						"activity": "Data flow3",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"waitTimeInSeconds": 99999
@@ -695,6 +674,29 @@
 						"computeType": "General"
 					},
 					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Copy data2",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Data flow3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"enableStaging": false
 				}
 			}
 		],

@@ -9,7 +9,7 @@
 						"referenceName": "SQL_DataFlowCosts",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "DataFlowCosts"
 				}
 			],
 			"sinks": [
@@ -18,7 +18,7 @@
 						"referenceName": "SQL_Costs",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "Costs"
 				}
 			],
 			"transformations": [
@@ -40,8 +40,8 @@
 				"     validateSchema: false,",
 				"     limit: 100,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> source1",
-				"source1 parse(JsonResult = JsonResult ? (id as string,",
+				"     format: 'table') ~> DataFlowCosts",
+				"DataFlowCosts parse(JsonResult = JsonResult ? (id as string,",
 				"          name as string,",
 				"          type as string,",
 				"          properties as (nextLink as string,",
@@ -79,7 +79,7 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 1,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+				"     errorHandlingOption: 'stopOnFirstError') ~> Costs"
 			]
 		}
 	}
