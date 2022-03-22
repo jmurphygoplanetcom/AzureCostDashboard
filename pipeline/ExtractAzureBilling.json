@@ -617,11 +617,11 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "Data flow2",
-							"type": "ExecuteDataFlow",
+							"name": "Costs",
+							"type": "WebActivity",
 							"dependsOn": [],
 							"policy": {
-								"timeout": "1.00:00:00",
+								"timeout": "7.00:00:00",
 								"retry": 0,
 								"retryIntervalInSeconds": 30,
 								"secureOutput": false,
@@ -629,15 +629,71 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"dataflow": {
-									"referenceName": "ParseResourceCosts",
-									"type": "DataFlowReference"
+								"url": {
+									"value": "@concat('https://management.azure.com', item()['ResourceGroupId'] ,'/providers/Microsoft.CostManagement/query?api-version=2021-10-01&$top=5000')",
+									"type": "Expression"
 								},
-								"compute": {
-									"coreCount": 8,
-									"computeType": "General"
+								"method": "POST",
+								"headers": {
+									"Content-Type": "application/json",
+									"Authorization": {
+										"value": "@variables('access_token')",
+										"type": "Expression"
+									}
 								},
-								"traceLevel": "Fine"
+								"body": {
+									"value": "@concat('{\"type\":\"ActualCost\",\"dataSet\":{\"granularity\":\"Daily\",\"aggregation\":{\"totalCost\":{\"name\":\"Cost\",\"function\":\"Sum\"},\"totalCostUSD\":{\"name\":\"CostUSD\",\"function\":\"Sum\"}},\"sorting\":[{\"direction\":\"ascending\",\"name\":\"UsageDate\"}],\"filter\":{\"And\":[{\"Dimensions\":{\"Name\":\"PublisherType\",\"Operator\":\"In\",\"Values\":[\"azure\"]}},{\"Dimensions\":{\"Name\":\"ResourceId\",\"Operator\":\"In\",\"Values\":[\"', item()['Id'] ,'\"]}}]}}}')",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Lookup1",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Costs",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderStoredProcedureName": "[dbo].[spInsertDataFlowCosts]",
+									"storedProcedureParameters": {
+										"JSON": {
+											"type": "String",
+											"value": {
+												"value": "@activity('Costs').output",
+												"type": "Expression"
+											}
+										},
+										"ResourceId": {
+											"type": "String",
+											"value": {
+												"value": "@item()['Id']",
+												"type": "Expression"
+											}
+										}
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "SQL_DataFlowCosts",
+									"type": "DatasetReference"
+								},
+								"firstRowOnly": false
 							}
 						}
 					]
