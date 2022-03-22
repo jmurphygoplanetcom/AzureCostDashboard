@@ -644,7 +644,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"dataflow": {
-									"referenceName": "dataflow1",
+									"referenceName": "ParseResourceCosts",
 									"type": "DataFlowReference"
 								},
 								"compute": {
@@ -687,7 +687,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "dataflow1",
+						"referenceName": "ParseResourceCosts",
 						"type": "DataFlowReference"
 					},
 					"compute": {

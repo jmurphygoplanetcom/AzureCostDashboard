@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "ParseResourceCosts",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -23,6 +23,9 @@
 				},
 				{
 					"name": "flatten1"
+				},
+				{
+					"name": "derivedColumn1"
 				}
 			],
 			"scriptLines": [
@@ -45,11 +48,17 @@
 				"     documentForm: 'singleDocument') ~> parse1",
 				"parse1 foldDown(unroll(JsonResult.properties.rows),",
 				"     mapColumn(",
-				"          blahblah = JsonResult.properties.rows",
+				"          costRows = JsonResult.properties.rows,",
+				"          id = JsonResult.id",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
-				"flatten1 sink(allowSchemaDrift: true,",
+				"flatten1 derive(costRows = costRows,",
+				"          cost = toDouble(split(substring(costRows, 2, length(costRows)-2), ',')[1]),",
+				"          costUSD = toDouble(split(substring(costRows, 2, length(costRows)-2), ',')[2]),",
+				"          UsageDate = toInteger(split(substring(costRows, 2, length(costRows)-2), ',')[3]),",
+				"          Currency = split(substring(costRows, 2, length(costRows)-2), ',')[4]) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
