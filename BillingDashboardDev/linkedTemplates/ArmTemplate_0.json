@@ -687,7 +687,7 @@
 								"upsertSettings": {
 									"useTempDB": true,
 									"keys": [
-										"Id"
+										"SubscriptionId"
 									]
 								},
 								"sqlWriterUseTableLock": false,
