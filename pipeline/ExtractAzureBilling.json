@@ -115,15 +115,6 @@
 						"mappings": [
 							{
 								"source": {
-									"path": "['id']"
-								},
-								"sink": {
-									"name": "Id",
-									"type": "String"
-								}
-							},
-							{
-								"source": {
 									"path": "['authorizationSource']"
 								},
 								"sink": {
