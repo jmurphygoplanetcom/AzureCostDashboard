@@ -326,15 +326,6 @@
 														"name": "Location",
 														"type": "String"
 													}
-												},
-												{
-													"source": {
-														"path": "$['subscriptionId']"
-													},
-													"sink": {
-														"name": "SubscriptionId",
-														"type": "String"
-													}
 												}
 											],
 											"collectionReference": "$['value']",
