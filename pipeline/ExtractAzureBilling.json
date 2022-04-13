@@ -67,7 +67,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Set access_token",
+						"activity": "ForEach3",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -552,7 +552,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "ForEach2",
+						"activity": "Set access_token",
 						"dependencyConditions": [
 							"Succeeded"
 						]
