@@ -95,7 +95,7 @@
 						"type": "Copy",
 						"dependsOn": [
 							{
-								"activity": "ForEach3",
+								"activity": "Set access_token",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -588,7 +588,7 @@
 						"type": "Lookup",
 						"dependsOn": [
 							{
-								"activity": "Set access_token",
+								"activity": "ForEach2",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -718,6 +718,43 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "ForEach3",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "ParseResourceCosts",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"DataFlowCosts": {},
+									"Costs": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -737,6 +774,7 @@
 				"[concat(variables('factoryId'), '/datasets/SQL_Subscribers')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_ResourceGroups')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]",
+				"[concat(variables('factoryId'), '/dataflows/ParseResourceCosts')]",
 				"[concat(variables('factoryId'), '/datasets/ResourceGroups')]",
 				"[concat(variables('factoryId'), '/datasets/Resources')]",
 				"[concat(variables('factoryId'), '/datasets/SQL_DataFlowCosts')]"
