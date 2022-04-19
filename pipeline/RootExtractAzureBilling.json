@@ -1,5 +1,5 @@
 {
-	"name": "ExtractAzureBilling",
+	"name": "RootExtractAzureBilling",
 	"properties": {
 		"activities": [
 			{
@@ -716,6 +716,10 @@
 		"variables": {
 			"access_token": {
 				"type": "String"
+			},
+			"nextLink": {
+				"type": "String",
+				"defaultValue": "0"
 			}
 		},
 		"annotations": [],

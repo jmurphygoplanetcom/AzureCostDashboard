@@ -9,6 +9,9 @@
 			"resourceGroupPath": {
 				"type": "string",
 				"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
+			},
+			"nextLink": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -17,7 +20,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "@concat(dataset().resourceGroupPath, '/resources?api-version=2021-04-01')",
+					"value": "@if(empty(dataset().nextLink), concat(dataset().resourceGroupPath, '/resources?api-version=2021-04-01'), dataset().nextLink)",
 					"type": "Expression"
 				}
 			}

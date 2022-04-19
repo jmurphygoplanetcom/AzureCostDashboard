@@ -9,6 +9,9 @@
 			"subscriptionId": {
 				"type": "string",
 				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+			},
+			"nextLink": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -17,7 +20,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "@concat('subscriptions/', dataset().subscriptionId,'/resourcegroups?api-version=2017-05-10')",
+					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/resourcegroups?api-version=2017-05-10'), dataset().nextLink)",
 					"type": "Expression"
 				}
 			}

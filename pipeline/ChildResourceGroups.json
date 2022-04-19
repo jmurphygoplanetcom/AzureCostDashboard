@@ -1,0 +1,14 @@
+{
+	"name": "ChildResourceGroups",
+	"properties": {
+		"variables": {
+			"subscriptionId": {
+				"type": "String"
+			},
+			"nextLink": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
