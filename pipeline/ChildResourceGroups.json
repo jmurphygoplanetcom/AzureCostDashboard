@@ -1,6 +1,140 @@
 {
 	"name": "ChildResourceGroups",
 	"properties": {
+		"activities": [
+			{
+				"name": "Until No Next Link",
+				"type": "Until",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@empty(variables('nextLink'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy Resource Groups",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"additionalColumns": [
+										{
+											"name": "subscriptionId",
+											"value": {
+												"value": "@item()['SubscriptionId']",
+												"type": "Expression"
+											}
+										}
+									],
+									"storeSettings": {
+										"type": "HttpReadSettings",
+										"requestMethod": "GET",
+										"additionalHeaders": {
+											"value": "@{concat('Authorization:', pipeline().parameters.access_token)}",
+											"type": "Expression"
+										},
+										"requestTimeout": ""
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											"Id"
+										]
+									},
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['id']"
+											},
+											"sink": {
+												"name": "Id",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['name']"
+											},
+											"sink": {
+												"name": "Name",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['location']"
+											},
+											"sink": {
+												"name": "Location",
+												"type": "String"
+											}
+										}
+									],
+									"collectionReference": "$['value']",
+									"mapComplexValuesToString": true
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ResourceGroups",
+									"type": "DatasetReference",
+									"parameters": {
+										"subscriptionId": {
+											"value": "@pipeline().parameters.subscriptionId",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "SQL_ResourceGroups",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"subscriptionId": {
+				"type": "string",
+				"defaultValue": "0"
+			},
+			"nextLink": {
+				"type": "string",
+				"defaultValue": "0"
+			},
+			"access_token": {
+				"type": "string"
+			}
+		},
 		"variables": {
 			"subscriptionId": {
 				"type": "String"
