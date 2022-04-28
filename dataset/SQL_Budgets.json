@@ -1,0 +1,42 @@
+{
+	"name": "SQL_Budgets",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DashboardSQLService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ResourceGroupId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Type",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Kind",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Location",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Budgets"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
