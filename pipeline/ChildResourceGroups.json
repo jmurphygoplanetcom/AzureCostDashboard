@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@variables('nextLink')",
+						"value": "@equals(variables('exitLoop'), true)",
 						"type": "Expression"
 					},
 					"activities": [
