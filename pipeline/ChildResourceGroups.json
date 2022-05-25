@@ -280,14 +280,7 @@
 			{
 				"name": "AzureKeyValue Secret",
 				"type": "WebActivity",
-				"dependsOn": [
-					{
-						"activity": "Set variable1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -311,14 +304,7 @@
 			{
 				"name": "AzureKeyValue ClientId",
 				"type": "WebActivity",
-				"dependsOn": [
-					{
-						"activity": "Set variable1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -336,35 +322,6 @@
 					"authentication": {
 						"type": "MSI",
 						"resource": "https://vault.azure.net"
-					}
-				}
-			},
-			{
-				"name": "Authenticate",
-				"type": "ExecutePipeline",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "Set variable1",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Authenticate",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "debug",
-					"value": {
-						"value": "@string(activity('Authenticate').output)",
-						"type": "Expression"
 					}
 				}
 			}
