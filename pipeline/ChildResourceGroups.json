@@ -147,6 +147,26 @@
 									"type": "Expression"
 								}
 							}
+						},
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Copy Resource Groups",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "testing",
+								"value": {
+									"value": "@string(activity('Copy Resource Groups').output)",
+									"type": "Expression"
+								}
+							}
 						}
 					],
 					"timeout": "7.00:00:00"
@@ -272,6 +292,9 @@
 				"type": "String"
 			},
 			"access_token": {
+				"type": "String"
+			},
+			"testing": {
 				"type": "String"
 			}
 		},
