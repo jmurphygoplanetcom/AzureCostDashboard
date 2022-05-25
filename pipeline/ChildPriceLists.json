@@ -261,31 +261,6 @@
 												"name": "ArmSkuName",
 												"type": "String"
 											}
-										},
-										{
-											"source": {
-												"path": "$['BillingCurrency']"
-											}
-										},
-										{
-											"source": {
-												"path": "$['CustomerEntityId']"
-											}
-										},
-										{
-											"source": {
-												"path": "$['CustomerEntityType']"
-											}
-										},
-										{
-											"source": {
-												"path": "$['NextPageLink']"
-											}
-										},
-										{
-											"source": {
-												"path": "$['Count']"
-											}
 										}
 									],
 									"collectionReference": "$['Items']",
