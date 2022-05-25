@@ -1,0 +1,112 @@
+{
+	"name": "SQL_PriceLists",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DashboardSQLService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "CurrencyCode",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TierMinimumUnits",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			},
+			{
+				"name": "RetailPrice",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			},
+			{
+				"name": "UnitPrice",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			},
+			{
+				"name": "Discount",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			},
+			{
+				"name": "ArmRegionName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Location",
+				"type": "nvarchar"
+			},
+			{
+				"name": "EffectiveStartDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MeterId",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "MeterName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ProductId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "SkuId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ProductName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "SkuName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ServiceName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ServiceId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ServiceFamily",
+				"type": "nvarchar"
+			},
+			{
+				"name": "UnitOfMeasure",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Type",
+				"type": "nvarchar"
+			},
+			{
+				"name": "isPrimaryMeterRegion",
+				"type": "bit"
+			},
+			{
+				"name": "ArmSkuName",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "PriceLists"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
