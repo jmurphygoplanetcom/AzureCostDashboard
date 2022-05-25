@@ -129,31 +129,11 @@
 							]
 						},
 						{
-							"name": "Set nextLink",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "Copy Resource Groups",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "nextLink",
-								"value": {
-									"value": "@if(empty(activity('Copy Resource Groups').output.nextLink), '', activity('Copy Resource Groups').output.nextLink)",
-									"type": "Expression"
-								}
-							}
-						},
-						{
 							"name": "Set variable1",
 							"type": "SetVariable",
 							"dependsOn": [
 								{
-									"activity": "Copy Resource Groups",
+									"activity": "Web1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -163,9 +143,48 @@
 							"typeProperties": {
 								"variableName": "testing",
 								"value": {
-									"value": "@string(activity('Copy Resource Groups').output)",
+									"value": "@activity('Web1').output.nextLink",
 									"type": "Expression"
 								}
+							}
+						},
+						{
+							"name": "Web1",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Copy Resource Groups",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat('/', pipeline().parameters.subscriptionId, '/resourcegroups?api-version=2017-05-10&$top=2')",
+									"type": "Expression"
+								},
+								"method": "GET",
+								"headers": {
+									"Authorization": {
+										"value": "@variables('access_token')",
+										"type": "Expression"
+									}
+								},
+								"linkedServices": [
+									{
+										"referenceName": "AzureManagementApi",
+										"type": "LinkedServiceReference"
+									}
+								]
 							}
 						}
 					],
