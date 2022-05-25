@@ -335,10 +335,6 @@
 									"subscriptionId": {
 										"value": "@item()['SubscriptionId']",
 										"type": "Expression"
-									},
-									"access_token": {
-										"value": "@variables('access_token')",
-										"type": "Expression"
 									}
 								}
 							}

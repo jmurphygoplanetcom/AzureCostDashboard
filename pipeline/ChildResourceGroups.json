@@ -5,7 +5,14 @@
 			{
 				"name": "Until No Next Link",
 				"type": "Until",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Set access_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
@@ -41,7 +48,7 @@
 										"type": "HttpReadSettings",
 										"requestMethod": "GET",
 										"additionalHeaders": {
-											"value": "@{concat('Authorization:', pipeline().parameters.access_token)}",
+											"value": "@{concat('Authorization:', variables('access_token'))}",
 											"type": "Expression"
 										},
 										"requestTimeout": ""
@@ -144,21 +151,129 @@
 					],
 					"timeout": "7.00:00:00"
 				}
+			},
+			{
+				"name": "OAuthToken",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "AzureKeyValue Secret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "AzureKeyValue ClientId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://login.microsoftonline.com/', pipeline().globalParameters.tenantId, '/oauth2/token')",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@concat('grant_type=client_credentials&client_id=', activity('AzureKeyValue ClientId').output['value'], '&client_secret=', activity('AzureKeyValue Secret').output['value'], '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set access_token",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "OAuthToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "access_token",
+					"value": {
+						"value": "@concat('Bearer ', activity('OAuthToken').output['access_token'])",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "AzureKeyValue Secret",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_secret_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "AzureKeyValue ClientId",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_id_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
 			}
 		],
 		"parameters": {
 			"subscriptionId": {
 				"type": "string",
 				"defaultValue": "0"
-			},
-			"access_token": {
-				"type": "string"
 			}
 		},
 		"variables": {
 			"nextLink": {
 				"type": "String",
 				"defaultValue": "0"
+			},
+			"access_token": {
+				"type": "String"
 			}
 		},
 		"annotations": []
