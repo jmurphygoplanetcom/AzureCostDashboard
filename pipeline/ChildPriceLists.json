@@ -343,7 +343,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@empty(activity('NextLinkCheck').output?.nextLink)",
+									"value": "@empty(activity('NextLinkCheck').output?.NextPageLink)",
 									"type": "Expression"
 								},
 								"ifFalseActivities": [
