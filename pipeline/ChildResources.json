@@ -1,5 +1,5 @@
 {
-	"name": "ChildResourceGroups",
+	"name": "ChildResources",
 	"properties": {
 		"activities": [
 			{
@@ -21,119 +21,11 @@
 					},
 					"activities": [
 						{
-							"name": "Copy Resource Groups",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "JsonSource",
-									"additionalColumns": [
-										{
-											"name": "subscriptionId",
-											"value": {
-												"value": "@pipeline().parameters.subscriptionId",
-												"type": "Expression"
-											}
-										}
-									],
-									"storeSettings": {
-										"type": "HttpReadSettings",
-										"requestMethod": "GET",
-										"additionalHeaders": {
-											"value": "@{concat('Authorization:', variables('access_token'))}",
-											"type": "Expression"
-										},
-										"requestTimeout": ""
-									},
-									"formatSettings": {
-										"type": "JsonReadSettings"
-									}
-								},
-								"sink": {
-									"type": "AzureSqlSink",
-									"writeBehavior": "upsert",
-									"upsertSettings": {
-										"useTempDB": true,
-										"keys": [
-											"Id"
-										]
-									},
-									"sqlWriterUseTableLock": false,
-									"disableMetricsCollection": false
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"mappings": [
-										{
-											"source": {
-												"path": "['id']"
-											},
-											"sink": {
-												"name": "Id",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['name']"
-											},
-											"sink": {
-												"name": "Name",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['location']"
-											},
-											"sink": {
-												"name": "Location",
-												"type": "String"
-											}
-										}
-									],
-									"collectionReference": "$['value']",
-									"mapComplexValuesToString": true
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "ResourceGroups",
-									"type": "DatasetReference",
-									"parameters": {
-										"subscriptionId": {
-											"value": "@pipeline().parameters.subscriptionId",
-											"type": "Expression"
-										},
-										"nextLink": {
-											"value": "@if(empty(variables('nextLink')), '', variables('nextLink'))",
-											"type": "Expression"
-										}
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "SQL_ResourceGroups",
-									"type": "DatasetReference"
-								}
-							]
-						},
-						{
 							"name": "NextLinkCheck",
 							"type": "WebActivity",
 							"dependsOn": [
 								{
-									"activity": "Copy Resource Groups",
+									"activity": "Copy Resources",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -149,7 +41,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/resourcegroups?api-version=2017-05-10'), variables('nextLink'))",
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/', pipeline().parameters.resourceGroupPath, '/resourcegroups?api-version=2017-05-10&$top=2'), variables('nextLink'))",
 									"type": "Expression"
 								},
 								"method": "GET",
@@ -212,6 +104,133 @@
 									}
 								]
 							}
+						},
+						{
+							"name": "Copy Resources",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"additionalColumns": [
+										{
+											"name": "resourceGroupId",
+											"value": {
+												"value": "@pipeline().parameters.resourceGroupPath",
+												"type": "Expression"
+											}
+										}
+									],
+									"storeSettings": {
+										"type": "HttpReadSettings",
+										"requestMethod": "GET",
+										"additionalHeaders": {
+											"value": "@{concat('Authorization:', variables('access_token'))}",
+											"type": "Expression"
+										},
+										"requestTimeout": ""
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['id']"
+											},
+											"sink": {
+												"name": "Id",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['name']"
+											},
+											"sink": {
+												"name": "Name",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['type']"
+											},
+											"sink": {
+												"name": "Type",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['kind']"
+											},
+											"sink": {
+												"name": "Kind",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['location']"
+											},
+											"sink": {
+												"name": "Location",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "$['resourceGroupId']"
+											},
+											"sink": {
+												"name": "ResourceGroupId",
+												"type": "String"
+											}
+										}
+									],
+									"collectionReference": "$['value']"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Resources",
+									"type": "DatasetReference",
+									"parameters": {
+										"resourceGroupPath": {
+											"value": "@pipeline().parameters.resourceGroupPath",
+											"type": "Expression"
+										},
+										"nextLink": {
+											"value": "@if(empty(variables('nextLink')), '', variables('nextLink'))",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "SQL_Resources",
+									"type": "DatasetReference"
+								}
+							]
 						}
 					],
 					"timeout": "7.00:00:00"
@@ -327,9 +346,9 @@
 			}
 		],
 		"parameters": {
-			"subscriptionId": {
+			"resourceGroupPath": {
 				"type": "string",
-				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+				"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
 			}
 		},
 		"variables": {
@@ -342,9 +361,6 @@
 			"exitLoop": {
 				"type": "Boolean",
 				"defaultValue": false
-			},
-			"debug": {
-				"type": "String"
 			}
 		},
 		"annotations": []
