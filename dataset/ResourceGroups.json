@@ -20,7 +20,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/resourcegroups?api-version=2017-05-10'), dataset().nextLink)",
+					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/resourcegroups?api-version=2017-05-10$top=2'), replace(dataset().nextLink, 'https://management.azure.com', ''))",
 					"type": "Expression"
 				}
 			}

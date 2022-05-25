@@ -143,7 +143,7 @@
 							"typeProperties": {
 								"variableName": "nextLink",
 								"value": {
-									"value": "@activity('Copy Resource Groups').output.nextLink",
+									"value": "@if(empty(activity('Copy Resource Groups').output.nextLink), '', activity('Copy Resource Groups').output.nextLink)",
 									"type": "Expression"
 								}
 							}
@@ -264,13 +264,12 @@
 		"parameters": {
 			"subscriptionId": {
 				"type": "string",
-				"defaultValue": "0"
+				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
 			}
 		},
 		"variables": {
 			"nextLink": {
-				"type": "String",
-				"defaultValue": "0"
+				"type": "String"
 			},
 			"access_token": {
 				"type": "String"
