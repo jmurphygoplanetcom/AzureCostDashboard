@@ -319,6 +319,29 @@
 									"type": "DatasetReference"
 								}
 							]
+						},
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "ChildResourceGroups",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"subscriptionId": {
+										"value": "@item()['SubscriptionId']",
+										"type": "Expression"
+									},
+									"access_token": {
+										"value": "@variables('access_token')",
+										"type": "Expression"
+									}
+								}
+							}
 						}
 					]
 				}

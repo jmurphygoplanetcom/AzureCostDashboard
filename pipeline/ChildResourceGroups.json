@@ -116,6 +116,26 @@
 									"type": "DatasetReference"
 								}
 							]
+						},
+						{
+							"name": "Set nextLink",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Copy Resource Groups",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "nextLink",
+								"value": {
+									"value": "@activity('Copy Resource Groups').output.nextLink",
+									"type": "Expression"
+								}
+							}
 						}
 					],
 					"timeout": "7.00:00:00"
@@ -127,20 +147,14 @@
 				"type": "string",
 				"defaultValue": "0"
 			},
-			"nextLink": {
-				"type": "string",
-				"defaultValue": "0"
-			},
 			"access_token": {
 				"type": "string"
 			}
 		},
 		"variables": {
-			"subscriptionId": {
-				"type": "String"
-			},
 			"nextLink": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "0"
 			}
 		},
 		"annotations": []
