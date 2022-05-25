@@ -355,7 +355,7 @@
 										"typeProperties": {
 											"variableName": "nextLink",
 											"value": {
-												"value": "@activity('NextLinkCheck').output?.nextLink",
+												"value": "@activity('NextLinkCheck').output?.NextPageLink",
 												"type": "Expression"
 											}
 										}
