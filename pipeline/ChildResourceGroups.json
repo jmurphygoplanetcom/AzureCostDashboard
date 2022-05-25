@@ -169,7 +169,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@concat('/', pipeline().parameters.subscriptionId, '/resourcegroups?api-version=2017-05-10&$top=2')",
+									"value": "@concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/resourcegroups?api-version=2017-05-10&$top=2')",
 									"type": "Expression"
 								},
 								"method": "GET",
