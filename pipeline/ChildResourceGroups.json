@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@empty(variables('nextLink'))",
+						"value": "@variables('nextLink')",
 						"type": "Expression"
 					},
 					"activities": [
@@ -129,27 +129,7 @@
 							]
 						},
 						{
-							"name": "Set variable1",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "Web1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "testing",
-								"value": {
-									"value": "@activity('Web1').output.nextLink",
-									"type": "Expression"
-								}
-							}
-						},
-						{
-							"name": "Web1",
+							"name": "NextLinkCheck",
 							"type": "WebActivity",
 							"dependsOn": [
 								{
@@ -169,7 +149,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/resourcegroups?api-version=2017-05-10&$top=2')",
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/resourcegroups?api-version=2017-05-10&$top=2'), variables('nextLink'))",
 									"type": "Expression"
 								},
 								"method": "GET",
@@ -183,6 +163,52 @@
 									{
 										"referenceName": "AzureManagementApi",
 										"type": "LinkedServiceReference"
+									}
+								]
+							}
+						},
+						{
+							"name": "If Next Link Null",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "NextLinkCheck",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@empty(activity('NextLinkCheck').output?.nextLink)",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Set Next Link",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "nextLink",
+											"value": {
+												"value": "@activity('NextLinkCheck').output?.nextLink",
+												"type": "Expression"
+											}
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Set ExitLoop True",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "exitLoop",
+											"value": true
+										}
 									}
 								]
 							}
@@ -308,13 +334,15 @@
 		},
 		"variables": {
 			"nextLink": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "0"
 			},
 			"access_token": {
 				"type": "String"
 			},
-			"testing": {
-				"type": "String"
+			"exitLoop": {
+				"type": "Boolean",
+				"defaultValue": false
 			}
 		},
 		"annotations": []
