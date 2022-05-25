@@ -334,8 +334,7 @@
 		},
 		"variables": {
 			"nextLink": {
-				"type": "String",
-				"defaultValue": "0"
+				"type": "String"
 			},
 			"access_token": {
 				"type": "String"
