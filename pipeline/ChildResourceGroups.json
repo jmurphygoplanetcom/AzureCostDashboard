@@ -115,7 +115,7 @@
 											"type": "Expression"
 										},
 										"nextLink": {
-											"value": "@if(equals(variables('nextLink'), '0'), '', variables('nextLink'))",
+											"value": "@if(empty(variables('nextLink')), '', variables('nextLink'))",
 											"type": "Expression"
 										}
 									}
