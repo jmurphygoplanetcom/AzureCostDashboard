@@ -41,7 +41,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/', pipeline().parameters.resourceGroupPath, '/resourcegroups?api-version=2017-05-10&$top=2'), variables('nextLink'))",
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/', pipeline().parameters.resourceGroupPath, '/resources?api-version=2017-05-10'), variables('nextLink'))",
 									"type": "Expression"
 								},
 								"method": "GET",
