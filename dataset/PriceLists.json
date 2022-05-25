@@ -20,7 +20,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview'), replace(dataset().nextLink, 'https://management.azure.com', ''))",
+					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview'), replace(dataset().nextLink, 'https://management.azure.com:443', ''))",
 					"type": "Expression"
 				}
 			}
