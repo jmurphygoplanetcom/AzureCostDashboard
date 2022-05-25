@@ -311,7 +311,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/resourcegroups?api-version=2017-05-10'), variables('nextLink'))",
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview'), variables('nextLink'))",
 									"type": "Expression"
 								},
 								"method": "GET",
