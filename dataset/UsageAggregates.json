@@ -1,0 +1,127 @@
+{
+	"name": "UsageAggregates",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureManagementApi",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"subscriptionId": {
+				"type": "string",
+				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+			},
+			"nextLink": {
+				"type": "string"
+			},
+			"startDate": {
+				"type": "string"
+			},
+			"endDate": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/providers/Microsoft.Commerce/usageAggregates?reportedStartTime=2022-04-01&reportedEndTime=2022-05-02&aggregationGranularity=daily &api-version=2015-06-01-preview'), replace(dataset().nextLink, 'https://management.azure.com', ''))",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"BillingCurrency": {
+					"type": "string"
+				},
+				"CustomerEntityId": {
+					"type": "string"
+				},
+				"CustomerEntityType": {
+					"type": "string"
+				},
+				"Items": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"currencyCode": {
+								"type": "string"
+							},
+							"tierMinimumUnits": {
+								"type": "number"
+							},
+							"retailPrice": {
+								"type": "number"
+							},
+							"unitPrice": {
+								"type": "number"
+							},
+							"discount": {
+								"type": "number"
+							},
+							"armRegionName": {
+								"type": "string"
+							},
+							"location": {
+								"type": "string"
+							},
+							"effectiveStartDate": {
+								"type": "string"
+							},
+							"meterId": {
+								"type": "string"
+							},
+							"meterName": {
+								"type": "string"
+							},
+							"productId": {
+								"type": "string"
+							},
+							"skuId": {
+								"type": "string"
+							},
+							"productName": {
+								"type": "string"
+							},
+							"skuName": {
+								"type": "string"
+							},
+							"serviceName": {
+								"type": "string"
+							},
+							"serviceId": {
+								"type": "string"
+							},
+							"serviceFamily": {
+								"type": "string"
+							},
+							"unitOfMeasure": {
+								"type": "string"
+							},
+							"type": {
+								"type": "string"
+							},
+							"isPrimaryMeterRegion": {
+								"type": "boolean"
+							},
+							"armSkuName": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				"NextPageLink": {
+					"type": "string"
+				},
+				"Count": {
+					"type": "integer"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

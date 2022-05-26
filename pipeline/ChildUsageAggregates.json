@@ -1,0 +1,515 @@
+{
+	"name": "ChildUsageAggregates",
+	"properties": {
+		"activities": [
+			{
+				"name": "Until No Next Link",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Set access_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('exitLoop'), true)",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy Price Lists",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"additionalColumns": [
+										{
+											"name": "subscriptionId",
+											"value": {
+												"value": "@pipeline().parameters.subscriptionId",
+												"type": "Expression"
+											}
+										}
+									],
+									"storeSettings": {
+										"type": "HttpReadSettings",
+										"requestMethod": "GET",
+										"additionalHeaders": {
+											"value": "@{concat('Authorization:', variables('access_token'))}",
+											"type": "Expression"
+										},
+										"requestTimeout": ""
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											"MeterId"
+										]
+									},
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['currencyCode']"
+											},
+											"sink": {
+												"name": "CurrencyCode",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['tierMinimumUnits']"
+											},
+											"sink": {
+												"name": "TierMinimumUnits",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['retailPrice']"
+											},
+											"sink": {
+												"name": "RetailPrice",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['unitPrice']"
+											},
+											"sink": {
+												"name": "UnitPrice",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['discount']"
+											},
+											"sink": {
+												"name": "Discount",
+												"type": "Decimal"
+											}
+										},
+										{
+											"source": {
+												"path": "['armRegionName']"
+											},
+											"sink": {
+												"name": "ArmRegionName",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['location']"
+											},
+											"sink": {
+												"name": "Location",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['effectiveStartDate']"
+											},
+											"sink": {
+												"name": "EffectiveStartDate",
+												"type": "DateTime"
+											}
+										},
+										{
+											"source": {
+												"path": "['meterId']"
+											},
+											"sink": {
+												"name": "MeterId",
+												"type": "Guid"
+											}
+										},
+										{
+											"source": {
+												"path": "['meterName']"
+											},
+											"sink": {
+												"name": "MeterName",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['productId']"
+											},
+											"sink": {
+												"name": "ProductId",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['skuId']"
+											},
+											"sink": {
+												"name": "SkuId",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['productName']"
+											},
+											"sink": {
+												"name": "ProductName",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['skuName']"
+											},
+											"sink": {
+												"name": "SkuName",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['serviceName']"
+											},
+											"sink": {
+												"name": "ServiceName",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['serviceId']"
+											},
+											"sink": {
+												"name": "ServiceId",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['serviceFamily']"
+											},
+											"sink": {
+												"name": "ServiceFamily",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['unitOfMeasure']"
+											},
+											"sink": {
+												"name": "UnitOfMeasure",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['type']"
+											},
+											"sink": {
+												"name": "Type",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['isPrimaryMeterRegion']"
+											},
+											"sink": {
+												"name": "isPrimaryMeterRegion",
+												"type": "Boolean"
+											}
+										},
+										{
+											"source": {
+												"path": "['armSkuName']"
+											},
+											"sink": {
+												"name": "ArmSkuName",
+												"type": "String"
+											}
+										}
+									],
+									"collectionReference": "$['Items']",
+									"mapComplexValuesToString": true
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "PriceLists",
+									"type": "DatasetReference",
+									"parameters": {
+										"subscriptionId": {
+											"value": "@pipeline().parameters.subscriptionId",
+											"type": "Expression"
+										},
+										"nextLink": {
+											"value": "@if(empty(variables('nextLink')), '', variables('nextLink'))",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "SQL_PriceLists",
+									"type": "DatasetReference"
+								}
+							]
+						},
+						{
+							"name": "NextLinkCheck",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Copy Price Lists",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview'), variables('nextLink'))",
+									"type": "Expression"
+								},
+								"method": "GET",
+								"headers": {
+									"Authorization": {
+										"value": "@variables('access_token')",
+										"type": "Expression"
+									}
+								},
+								"linkedServices": [
+									{
+										"referenceName": "AzureManagementApi",
+										"type": "LinkedServiceReference"
+									}
+								]
+							}
+						},
+						{
+							"name": "If Next Link Null",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "NextLinkCheck",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@empty(activity('NextLinkCheck').output?.NextPageLink)",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Set Next Link",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "nextLink",
+											"value": {
+												"value": "@activity('NextLinkCheck').output?.NextPageLink",
+												"type": "Expression"
+											}
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Set ExitLoop True",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "exitLoop",
+											"value": true
+										}
+									}
+								]
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			},
+			{
+				"name": "OAuthToken",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "AzureKeyValue Secret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "AzureKeyValue ClientId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://login.microsoftonline.com/', pipeline().globalParameters.tenantId, '/oauth2/token')",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@concat('grant_type=client_credentials&client_id=', activity('AzureKeyValue ClientId').output['value'], '&client_secret=', activity('AzureKeyValue Secret').output['value'], '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set access_token",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "OAuthToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "access_token",
+					"value": {
+						"value": "@concat('Bearer ', activity('OAuthToken').output['access_token'])",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "AzureKeyValue Secret",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_secret_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "AzureKeyValue ClientId",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_id_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"subscriptionId": {
+				"type": "string",
+				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+			}
+		},
+		"variables": {
+			"nextLink": {
+				"type": "String",
+				"defaultValue": "https://management.azure.com:443/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview&$skip=1000"
+			},
+			"access_token": {
+				"type": "String"
+			},
+			"exitLoop": {
+				"type": "Boolean",
+				"defaultValue": false
+			},
+			"debug": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
