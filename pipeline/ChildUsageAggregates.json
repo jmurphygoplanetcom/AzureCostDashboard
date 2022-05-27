@@ -240,7 +240,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@empty(activity('NextLinkCheck').output?.NextPageLink)",
+									"value": "@empty(activity('NextLinkCheck').output?.nextLink)",
 									"type": "Expression"
 								},
 								"ifFalseActivities": [
@@ -252,7 +252,7 @@
 										"typeProperties": {
 											"variableName": "nextLink",
 											"value": {
-												"value": "@activity('NextLinkCheck').output?.NextPageLink",
+												"value": "@activity('NextLinkCheck').output?.nextLink",
 												"type": "Expression"
 											}
 										}
