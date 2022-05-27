@@ -59,13 +59,7 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"writeBehavior": "upsert",
-									"upsertSettings": {
-										"useTempDB": true,
-										"keys": [
-											"MeterId"
-										]
-									},
+									"writeBehavior": "insert",
 									"sqlWriterUseTableLock": false,
 									"disableMetricsCollection": false
 								},
@@ -75,88 +69,34 @@
 									"mappings": [
 										{
 											"source": {
-												"path": "['currencyCode']"
+												"path": "['properties']['subscriptionId']"
 											},
 											"sink": {
-												"name": "CurrencyCode",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['tierMinimumUnits']"
-											},
-											"sink": {
-												"name": "TierMinimumUnits",
-												"type": "Decimal"
-											}
-										},
-										{
-											"source": {
-												"path": "['retailPrice']"
-											},
-											"sink": {
-												"name": "RetailPrice",
-												"type": "Decimal"
-											}
-										},
-										{
-											"source": {
-												"path": "['unitPrice']"
-											},
-											"sink": {
-												"name": "UnitPrice",
-												"type": "Decimal"
-											}
-										},
-										{
-											"source": {
-												"path": "['discount']"
-											},
-											"sink": {
-												"name": "Discount",
-												"type": "Decimal"
-											}
-										},
-										{
-											"source": {
-												"path": "['armRegionName']"
-											},
-											"sink": {
-												"name": "ArmRegionName",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['location']"
-											},
-											"sink": {
-												"name": "Location",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['effectiveStartDate']"
-											},
-											"sink": {
-												"name": "EffectiveStartDate",
-												"type": "DateTime"
-											}
-										},
-										{
-											"source": {
-												"path": "['meterId']"
-											},
-											"sink": {
-												"name": "MeterId",
+												"name": "SubscriptionId",
 												"type": "Guid"
 											}
 										},
 										{
 											"source": {
-												"path": "['meterName']"
+												"path": "['properties']['usageStartTime']"
+											},
+											"sink": {
+												"name": "UsageStartTime",
+												"type": "DateTime"
+											}
+										},
+										{
+											"source": {
+												"path": "['properties']['usageEndTime']"
+											},
+											"sink": {
+												"name": "UsageEndTime",
+												"type": "DateTime"
+											}
+										},
+										{
+											"source": {
+												"path": "['properties']['meterName']"
 											},
 											"sink": {
 												"name": "MeterName",
@@ -165,105 +105,60 @@
 										},
 										{
 											"source": {
-												"path": "['productId']"
+												"path": "['properties']['meterCategory']"
 											},
 											"sink": {
-												"name": "ProductId",
+												"name": "MeterCategory",
 												"type": "String"
 											}
 										},
 										{
 											"source": {
-												"path": "['skuId']"
+												"path": "['properties']['meterSubCategory']"
 											},
 											"sink": {
-												"name": "SkuId",
+												"name": "MeterSubCategory",
 												"type": "String"
 											}
 										},
 										{
 											"source": {
-												"path": "['productName']"
+												"path": "['properties']['unit']"
 											},
 											"sink": {
-												"name": "ProductName",
+												"name": "Unit",
 												"type": "String"
 											}
 										},
 										{
 											"source": {
-												"path": "['skuName']"
+												"path": "['properties']['instanceData']"
 											},
 											"sink": {
-												"name": "SkuName",
+												"name": "InstanceData",
 												"type": "String"
 											}
 										},
 										{
 											"source": {
-												"path": "['serviceName']"
+												"path": "['properties']['meterId']"
 											},
 											"sink": {
-												"name": "ServiceName",
-												"type": "String"
+												"name": "MeterId",
+												"type": "Guid"
 											}
 										},
 										{
 											"source": {
-												"path": "['serviceId']"
+												"path": "['properties']['quantity']"
 											},
 											"sink": {
-												"name": "ServiceId",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['serviceFamily']"
-											},
-											"sink": {
-												"name": "ServiceFamily",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['unitOfMeasure']"
-											},
-											"sink": {
-												"name": "UnitOfMeasure",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['type']"
-											},
-											"sink": {
-												"name": "Type",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['isPrimaryMeterRegion']"
-											},
-											"sink": {
-												"name": "isPrimaryMeterRegion",
-												"type": "Boolean"
-											}
-										},
-										{
-											"source": {
-												"path": "['armSkuName']"
-											},
-											"sink": {
-												"name": "ArmSkuName",
-												"type": "String"
+												"name": "Quantity",
+												"type": "Decimal"
 											}
 										}
 									],
-									"collectionReference": "$['Items']",
+									"collectionReference": "$['value']",
 									"mapComplexValuesToString": true
 								}
 							},
@@ -287,7 +182,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "SQL_PriceLists",
+									"referenceName": "SQL_UsageAggregates",
 									"type": "DatasetReference"
 								}
 							]
@@ -313,7 +208,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview'), variables('nextLink'))",
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/providers/Microsoft.Commerce/usageAggregates?reportedStartTime=2022-04-01&reportedEndTime=2022-05-02&aggregationGranularity=daily &api-version=2015-06-01-preview'), variables('nextLink'))",
 									"type": "Expression"
 								},
 								"method": "GET",
