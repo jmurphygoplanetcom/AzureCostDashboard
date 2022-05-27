@@ -1,0 +1,64 @@
+{
+	"name": "SQL_UsageAggregates",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DashboardSQLService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "SubscriptionId",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "UsageStartTime",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "UsageEndTime",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "MeterName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MeterCategory",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MeterSubCategory",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Unit",
+				"type": "nvarchar"
+			},
+			{
+				"name": "InstanceData",
+				"type": "nvarchar"
+			},
+			{
+				"name": "MeterId",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "Quantity",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "UsageAggregates"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
