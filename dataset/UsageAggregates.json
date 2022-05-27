@@ -85,7 +85,7 @@
 										"type": "object"
 									},
 									"quantity": {
-										"type": "number"
+										"type": "decimal"
 									}
 								}
 							}
