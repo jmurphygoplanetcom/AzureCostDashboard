@@ -21,7 +21,7 @@
 					},
 					"activities": [
 						{
-							"name": "Copy Price Lists",
+							"name": "Copy Usage Aggregates",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -269,7 +269,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "PriceLists",
+									"referenceName": "UsageAggregates",
 									"type": "DatasetReference",
 									"parameters": {
 										"subscriptionId": {
@@ -279,7 +279,9 @@
 										"nextLink": {
 											"value": "@if(empty(variables('nextLink')), '', variables('nextLink'))",
 											"type": "Expression"
-										}
+										},
+										"startDate": "test",
+										"endDate": "test"
 									}
 								}
 							],
@@ -295,7 +297,7 @@
 							"type": "WebActivity",
 							"dependsOn": [
 								{
-									"activity": "Copy Price Lists",
+									"activity": "Copy Usage Aggregates",
 									"dependencyConditions": [
 										"Succeeded"
 									]
