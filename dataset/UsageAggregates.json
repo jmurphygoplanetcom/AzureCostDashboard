@@ -34,91 +34,63 @@
 		"schema": {
 			"type": "object",
 			"properties": {
-				"BillingCurrency": {
+				"nextLink": {
 					"type": "string"
 				},
-				"CustomerEntityId": {
-					"type": "string"
-				},
-				"CustomerEntityType": {
-					"type": "string"
-				},
-				"Items": {
+				"value": {
 					"type": "array",
 					"items": {
 						"type": "object",
 						"properties": {
-							"currencyCode": {
+							"id": {
 								"type": "string"
 							},
-							"tierMinimumUnits": {
-								"type": "number"
-							},
-							"retailPrice": {
-								"type": "number"
-							},
-							"unitPrice": {
-								"type": "number"
-							},
-							"discount": {
-								"type": "number"
-							},
-							"armRegionName": {
-								"type": "string"
-							},
-							"location": {
-								"type": "string"
-							},
-							"effectiveStartDate": {
-								"type": "string"
-							},
-							"meterId": {
-								"type": "string"
-							},
-							"meterName": {
-								"type": "string"
-							},
-							"productId": {
-								"type": "string"
-							},
-							"skuId": {
-								"type": "string"
-							},
-							"productName": {
-								"type": "string"
-							},
-							"skuName": {
-								"type": "string"
-							},
-							"serviceName": {
-								"type": "string"
-							},
-							"serviceId": {
-								"type": "string"
-							},
-							"serviceFamily": {
-								"type": "string"
-							},
-							"unitOfMeasure": {
+							"name": {
 								"type": "string"
 							},
 							"type": {
 								"type": "string"
 							},
-							"isPrimaryMeterRegion": {
-								"type": "boolean"
-							},
-							"armSkuName": {
-								"type": "string"
+							"properties": {
+								"type": "object",
+								"properties": {
+									"subscriptionId": {
+										"type": "string"
+									},
+									"usageStartTime": {
+										"type": "string"
+									},
+									"usageEndTime": {
+										"type": "string"
+									},
+									"meterName": {
+										"type": "string"
+									},
+									"meterCategory": {
+										"type": "string"
+									},
+									"meterSubCategory": {
+										"type": "string"
+									},
+									"unit": {
+										"type": "string"
+									},
+									"instanceData": {
+										"type": "string"
+									},
+									"meterId": {
+										"type": "string"
+									},
+									"infoFields": {
+										"type": "object"
+									},
+									"quantity": {
+										"type": "number"
+									}
+								}
 							}
 						}
 					}
-				},
-				"NextPageLink": {
-					"type": "string"
-				},
-				"Count": {
-					"type": "integer"
 				}
 			}
 		}
