@@ -504,8 +504,7 @@
 		},
 		"variables": {
 			"nextLink": {
-				"type": "String",
-				"defaultValue": "https://management.azure.com:443/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview&$skip=1000"
+				"type": "String"
 			},
 			"access_token": {
 				"type": "String"
