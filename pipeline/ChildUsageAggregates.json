@@ -154,7 +154,7 @@
 											},
 											"sink": {
 												"name": "Quantity",
-												"type": "Decimal"
+												"type": "Float"
 											}
 										}
 									],

@@ -50,9 +50,8 @@
 			},
 			{
 				"name": "Quantity",
-				"type": "decimal",
-				"precision": 18,
-				"scale": 18
+				"type": "float",
+				"precision": 15
 			}
 		],
 		"typeProperties": {
