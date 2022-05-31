@@ -175,8 +175,14 @@
 											"value": "@if(empty(variables('nextLink')), '', variables('nextLink'))",
 											"type": "Expression"
 										},
-										"startDate": "test",
-										"endDate": "test"
+										"startDate": {
+											"value": "@variables('startDate')",
+											"type": "Expression"
+										},
+										"endDate": {
+											"value": "@variables('endDate')",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -208,7 +214,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/providers/Microsoft.Commerce/usageAggregates?reportedStartTime=2022-04-01&reportedEndTime=2022-05-02&aggregationGranularity=daily &api-version=2015-06-01-preview'), variables('nextLink'))",
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/providers/Microsoft.Commerce/usageAggregates?reportedStartTime=', variables('startDate') ,'&reportedEndTime=', variables('endDate') ,'&aggregationGranularity=daily&api-version=2015-06-01-preview'), variables('nextLink'))",
 									"type": "Expression"
 								},
 								"method": "GET",
@@ -288,6 +294,18 @@
 					},
 					{
 						"activity": "AzureKeyValue ClientId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set startDate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set endDate",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -383,12 +401,42 @@
 						"resource": "https://vault.azure.net"
 					}
 				}
+			},
+			{
+				"name": "Set startDate",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "startDate",
+					"value": {
+						"value": "@formatDateTime(pipeline().parameters.usageDate, 'yyyy-MM-dd')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set endDate",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "endDate",
+					"value": {
+						"value": "@formatDateTime(adddays(pipeline().parameters.usageDate, 1), 'yyyy-MM-dd')",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
 			"subscriptionId": {
 				"type": "string",
 				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+			},
+			"usageDate": {
+				"type": "string",
+				"defaultValue": "5/1/2022"
 			}
 		},
 		"variables": {
@@ -402,7 +450,10 @@
 				"type": "Boolean",
 				"defaultValue": false
 			},
-			"debug": {
+			"startDate": {
+				"type": "String"
+			},
+			"endDate": {
 				"type": "String"
 			}
 		},
