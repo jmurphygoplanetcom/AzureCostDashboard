@@ -279,6 +279,10 @@
 										"nextLink": {
 											"value": "@if(empty(variables('nextLink')), '', variables('nextLink'))",
 											"type": "Expression"
+										},
+										"armRegionName": {
+											"value": "@pipeline().parameters.armRegionName",
+											"type": "Expression"
 										}
 									}
 								}
@@ -311,7 +315,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"url": {
-									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview'), variables('nextLink'))",
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview&$filter=armRegionName eq ''', pipeline().parameters.armRegionName, ''''), variables('nextLink'))",
 									"type": "Expression"
 								},
 								"method": "GET",
@@ -492,6 +496,10 @@
 			"subscriptionId": {
 				"type": "string",
 				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+			},
+			"armRegionName": {
+				"type": "string",
+				"defaultValue": "eastus"
 			}
 		},
 		"variables": {
@@ -505,9 +513,6 @@
 			"exitLoop": {
 				"type": "Boolean",
 				"defaultValue": false
-			},
-			"debug": {
-				"type": "String"
 			}
 		},
 		"annotations": []
