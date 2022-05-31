@@ -52,7 +52,7 @@
 				"name": "Quantity",
 				"type": "decimal",
 				"precision": 18,
-				"scale": 0
+				"scale": 18
 			}
 		],
 		"typeProperties": {
