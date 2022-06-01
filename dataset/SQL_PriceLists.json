@@ -14,27 +14,23 @@
 			},
 			{
 				"name": "TierMinimumUnits",
-				"type": "decimal",
-				"precision": 18,
-				"scale": 0
+				"type": "float",
+				"precision": 15
 			},
 			{
 				"name": "RetailPrice",
-				"type": "decimal",
-				"precision": 18,
-				"scale": 0
+				"type": "float",
+				"precision": 15
 			},
 			{
 				"name": "UnitPrice",
-				"type": "decimal",
-				"precision": 18,
-				"scale": 0
+				"type": "float",
+				"precision": 15
 			},
 			{
 				"name": "Discount",
-				"type": "decimal",
-				"precision": 18,
-				"scale": 0
+				"type": "float",
+				"precision": 15
 			},
 			{
 				"name": "ArmRegionName",
@@ -101,6 +97,10 @@
 			{
 				"name": "ArmSkuName",
 				"type": "nvarchar"
+			},
+			{
+				"name": "SubscriptionId",
+				"type": "uniqueidentifier"
 			}
 		],
 		"typeProperties": {
