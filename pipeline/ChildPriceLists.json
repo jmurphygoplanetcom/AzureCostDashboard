@@ -70,7 +70,8 @@
 											"ProductId",
 											"SkuId",
 											"Type",
-											"TierMinimumUnits"
+											"TierMinimumUnits",
+											"SubscriptionId"
 										]
 									},
 									"sqlWriterUseTableLock": false,
