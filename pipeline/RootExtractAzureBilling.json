@@ -217,7 +217,7 @@
 					},
 					"activities": [
 						{
-							"name": "ChildResourceGroups",
+							"name": "Execute Pipeline Resource Groups",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"userProperties": [],
@@ -230,6 +230,29 @@
 								"parameters": {
 									"subscriptionId": {
 										"value": "@item()['SubscriptionId']",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Execute Pipeline Usage Aggregates",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "ChildUsageAggregates",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"subscriptionId": {
+										"value": "@item()['SubscriptionId']",
+										"type": "Expression"
+									},
+									"usageDate": {
+										"value": "@utcnow()",
 										"type": "Expression"
 									}
 								}
@@ -289,127 +312,23 @@
 					},
 					"activities": [
 						{
-							"name": "Copy data1",
-							"type": "Copy",
+							"name": "Execute Pipeline Resources",
+							"type": "ExecutePipeline",
 							"dependsOn": [],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
 							"userProperties": [],
 							"typeProperties": {
-								"source": {
-									"type": "JsonSource",
-									"additionalColumns": [
-										{
-											"name": "resourceGroupId",
-											"value": {
-												"value": "@item()['Id']",
-												"type": "Expression"
-											}
-										}
-									],
-									"storeSettings": {
-										"type": "HttpReadSettings",
-										"requestMethod": "GET",
-										"additionalHeaders": {
-											"value": "@{concat('Authorization:', variables('access_token'))}",
-											"type": "Expression"
-										},
-										"requestTimeout": ""
-									},
-									"formatSettings": {
-										"type": "JsonReadSettings"
-									}
+								"pipeline": {
+									"referenceName": "ChildResources",
+									"type": "PipelineReference"
 								},
-								"sink": {
-									"type": "AzureSqlSink",
-									"writeBehavior": "insert",
-									"sqlWriterUseTableLock": false
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"mappings": [
-										{
-											"source": {
-												"path": "['id']"
-											},
-											"sink": {
-												"name": "Id",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['name']"
-											},
-											"sink": {
-												"name": "Name",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['type']"
-											},
-											"sink": {
-												"name": "Type",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['kind']"
-											},
-											"sink": {
-												"name": "Kind",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "['location']"
-											},
-											"sink": {
-												"name": "Location",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "$['resourceGroupId']"
-											},
-											"sink": {
-												"name": "ResourceGroupId",
-												"type": "String"
-											}
-										}
-									],
-									"collectionReference": "$['value']"
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "Resources",
-									"type": "DatasetReference",
-									"parameters": {
-										"resourceGroupPath": {
-											"value": "@item()['Id']",
-											"type": "Expression"
-										}
+								"waitOnCompletion": true,
+								"parameters": {
+									"resourceGroupPath": {
+										"value": "@item()['Id']",
+										"type": "Expression"
 									}
 								}
-							],
-							"outputs": [
-								{
-									"referenceName": "SQL_Resources",
-									"type": "DatasetReference"
-								}
-							]
+							}
 						}
 					]
 				}
@@ -597,18 +516,18 @@
 				}
 			},
 			{
-				"name": "Data flow1",
-				"type": "ExecuteDataFlow",
+				"name": "Lookup Distict Subscription_Location",
+				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "ForEach3",
+						"activity": "ForEach2",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					}
 				],
 				"policy": {
-					"timeout": "1.00:00:00",
+					"timeout": "7.00:00:00",
 					"retry": 0,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
@@ -616,15 +535,61 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"dataflow": {
-						"referenceName": "ParseResourceCosts",
-						"type": "DataFlowReference"
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT DISTINCT \n\t rg.SubscriptionId\n\t,r.Location\nFROM\n\tResources r\n\t\tINNER JOIN\n\tResourceGroups rg\n\t\tON r.ResourceGroupId = rg.Id\n",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
+					"dataset": {
+						"referenceName": "SQL_Resources",
+						"type": "DatasetReference"
 					},
-					"traceLevel": "Fine"
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach Subscription_Location",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup Distict Subscription_Location",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup Distict Subscription_Location').output",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Execute Pipeline PriceLists",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "ChildPriceLists",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"subscriptionId": {
+										"value": "@item()['SubscriptionId']",
+										"type": "Expression"
+									},
+									"armRegionName": {
+										"value": "@item()['Location']",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
 				}
 			}
 		],

@@ -59,7 +59,20 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"writeBehavior": "insert",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											"ArmRegionName",
+											"EffectiveStartDate",
+											"MeterId",
+											"MeterName",
+											"ProductId",
+											"SkuId",
+											"Type",
+											"TierMinimumUnits"
+										]
+									},
 									"sqlWriterUseTableLock": false,
 									"disableMetricsCollection": false
 								},
