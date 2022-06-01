@@ -274,7 +274,8 @@
 												"path": "$['subscriptionId']"
 											},
 											"sink": {
-												"name": "SubscriptionId"
+												"name": "SubscriptionId",
+												"type": "String"
 											}
 										}
 									],

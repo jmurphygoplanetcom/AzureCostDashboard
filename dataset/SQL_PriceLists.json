@@ -100,7 +100,7 @@
 			},
 			{
 				"name": "SubscriptionId",
-				"type": "uniqueidentifier"
+				"type": "nvarchar"
 			}
 		],
 		"typeProperties": {
