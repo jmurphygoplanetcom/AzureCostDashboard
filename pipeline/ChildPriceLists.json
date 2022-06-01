@@ -274,7 +274,7 @@
 												"path": "$['subscriptionId']"
 											},
 											"sink": {
-												"name": "CurrencyCode"
+												"name": "SubscriptionId"
 											}
 										}
 									],
