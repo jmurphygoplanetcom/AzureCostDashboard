@@ -59,7 +59,18 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"writeBehavior": "insert",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											"UsageStartTime",
+											"UsageEndTime",
+											"MeterName",
+											"MeterCategory",
+											"MeterSubCategory",
+											"MeterId"
+										]
+									},
 									"sqlWriterUseTableLock": false,
 									"disableMetricsCollection": false
 								},
@@ -429,7 +440,7 @@
 				}
 			},
 			{
-				"name": "Lookup1",
+				"name": "Update JSON Properties",
 				"type": "Lookup",
 				"dependsOn": [
 					{
