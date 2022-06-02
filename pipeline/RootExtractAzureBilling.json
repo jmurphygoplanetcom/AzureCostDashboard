@@ -791,7 +791,7 @@
 							"type": "Copy",
 							"dependsOn": [
 								{
-									"activity": "Set variable1",
+									"activity": "Clear BillingSubscriptions",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -832,14 +832,7 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"writeBehavior": "upsert",
-									"upsertSettings": {
-										"useTempDB": false,
-										"keys": [
-											"AccountId",
-											"SubscriptionId"
-										]
-									},
+									"writeBehavior": "insert",
 									"sqlWriterUseTableLock": false,
 									"disableMetricsCollection": false
 								},
@@ -889,16 +882,32 @@
 							]
 						},
 						{
-							"name": "Set variable1",
-							"type": "SetVariable",
+							"name": "Clear BillingSubscriptions",
+							"type": "Lookup",
 							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
-								"variableName": "debugger",
-								"value": {
-									"value": "@item()['Id']",
-									"type": "Expression"
-								}
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@concat('DELETE FROM BillingSubscriptions WHERE AccountId = ''', item()['Id'], '''')",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "SQL_BillingSubscriptions",
+									"type": "DatasetReference"
+								},
+								"firstRowOnly": true
 							}
 						}
 					]
