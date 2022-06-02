@@ -784,7 +784,7 @@
 						"value": "@activity('BillingAccounts').output['value']",
 						"type": "Expression"
 					},
-					"isSequential": true,
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Copy BillingSubscription",
@@ -832,7 +832,14 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"writeBehavior": "insert",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": false,
+										"keys": [
+											"AccountId",
+											"SubscriptionId"
+										]
+									},
 									"sqlWriterUseTableLock": false,
 									"disableMetricsCollection": false
 								},
