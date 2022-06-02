@@ -42,6 +42,13 @@
 												"value": "@pipeline().parameters.subscriptionId",
 												"type": "Expression"
 											}
+										},
+										{
+											"name": "usageDate",
+											"value": {
+												"value": "@pipeline().parameters.usageDate",
+												"type": "Expression"
+											}
 										}
 									],
 									"storeSettings": {
@@ -68,7 +75,8 @@
 											"MeterName",
 											"MeterCategory",
 											"MeterSubCategory",
-											"MeterId"
+											"MeterId",
+											"SubscriptionId"
 										]
 									},
 									"sqlWriterUseTableLock": false,
