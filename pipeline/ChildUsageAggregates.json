@@ -11,6 +11,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "Clear Previous Daily Aggregates",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"userProperties": [],
@@ -466,6 +472,34 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": "  UPDATE UsageAggregates\n  SET\n\t ResourceUri = JSON_VALUE(InstanceData, '$.\"Microsoft.Resources\".resourceUri')\n\t,[Location] = JSON_VALUE(InstanceData, '$.\"Microsoft.Resources\".location') \n  WHERE \n\t\tISJSON(InstanceData) > 0\n\tAND ResourceUri IS NULL\n\nSELECT 1 AS COMPLETED",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "SQL_UsageAggregates",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Clear Previous Daily Aggregates",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat('DELETE FROM UsageAggregates WHERE SubscriptionId = ''', pipeline().parameters.subscriptionId, ''' AND UsageDate = ''', pipeline().parameters.usageDate,  '''  SELECT 1 AS COMPLETED')",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
