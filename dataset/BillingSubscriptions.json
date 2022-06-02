@@ -15,7 +15,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "HttpServerLocation",
-				"relativeUrl": "/providers/Microsoft.Billing/billingAccounts?includeCAID=true&api-version=2019-10-01-preview"
+				"relativeUrl": {
+					"value": "@concat(dataset().BillingAccountId, '/billingSubscriptions?api-version=2019-10-01-preview&excludeCharges=true')",
+					"type": "Expression"
+				}
 			}
 		},
 		"schema": {
