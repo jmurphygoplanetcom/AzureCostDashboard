@@ -72,11 +72,8 @@
 										"keys": [
 											"UsageStartTime",
 											"UsageEndTime",
-											"MeterName",
-											"MeterCategory",
-											"MeterSubCategory",
-											"MeterId",
-											"SubscriptionId"
+											"SubscriptionId",
+											"InstanceData"
 										]
 									},
 									"sqlWriterUseTableLock": false,
