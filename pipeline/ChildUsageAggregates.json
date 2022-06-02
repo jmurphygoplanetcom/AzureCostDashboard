@@ -73,7 +73,10 @@
 											"UsageStartTime",
 											"UsageEndTime",
 											"SubscriptionId",
-											"InstanceData"
+											"InstanceData",
+											"MeterName",
+											"MeterCategory",
+											"MeterSubCategory"
 										]
 									},
 									"sqlWriterUseTableLock": false,
