@@ -67,7 +67,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Set access_token",
+						"activity": "ForEach4",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -784,7 +784,7 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "Copy data1",
+							"name": "Copy BillingSubscription",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -798,9 +798,23 @@
 							"typeProperties": {
 								"source": {
 									"type": "JsonSource",
+									"additionalColumns": [
+										{
+											"name": "billingAccountId",
+											"value": {
+												"value": "@item()['Id']",
+												"type": "Expression"
+											}
+										}
+									],
 									"storeSettings": {
 										"type": "HttpReadSettings",
-										"requestMethod": "GET"
+										"requestMethod": "GET",
+										"additionalHeaders": {
+											"value": "@{concat('Authorization:', variables('access_token'))}",
+											"type": "Expression"
+										},
+										"requestTimeout": ""
 									},
 									"formatSettings": {
 										"type": "JsonReadSettings"
@@ -819,7 +833,31 @@
 									"sqlWriterUseTableLock": false,
 									"disableMetricsCollection": false
 								},
-								"enableStaging": false
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['properties']['subscriptionId']"
+											},
+											"sink": {
+												"name": "SubscriptionId",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "$['billingAccountId']"
+											},
+											"sink": {
+												"name": "AccountId",
+												"type": "String"
+											}
+										}
+									],
+									"collectionReference": "$['value']"
+								}
 							},
 							"inputs": [
 								{
