@@ -9,6 +9,14 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
+				"name": "Id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Name",
+				"type": "nvarchar"
+			},
+			{
 				"name": "AccountId",
 				"type": "nvarchar"
 			},

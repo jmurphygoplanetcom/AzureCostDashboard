@@ -639,7 +639,85 @@
 						"sqlWriterUseTableLock": false,
 						"disableMetricsCollection": false
 					},
-					"enableStaging": false
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['id']"
+								},
+								"sink": {
+									"name": "Id",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['name']"
+								},
+								"sink": {
+									"name": "Name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['properties']['accountId']"
+								},
+								"sink": {
+									"name": "AccountId",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['properties']['accountStatus']"
+								},
+								"sink": {
+									"name": "AccountStatus",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['properties']['accountType']"
+								},
+								"sink": {
+									"name": "AccountType",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['properties']['agreementType']"
+								},
+								"sink": {
+									"name": "AgreementType",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['properties']['displayName']"
+								},
+								"sink": {
+									"name": "DisplayName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['properties']['organizationId']"
+								},
+								"sink": {
+									"name": "OrganizationId",
+									"type": "String"
+								}
+							}
+						],
+						"collectionReference": "$['value']"
+					}
 				},
 				"inputs": [
 					{
