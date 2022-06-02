@@ -215,6 +215,7 @@
 						"value": "@activity('SQL Subscribers').output['value']",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Execute Pipeline Resource Groups",
@@ -310,6 +311,7 @@
 						"value": "@activity('SQL Resource Groups').output['value']",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Execute Pipeline Resources",
@@ -565,6 +567,7 @@
 						"value": "@activity('Lookup Distict Subscription_Location').output",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Execute Pipeline PriceLists",
@@ -786,7 +789,14 @@
 						{
 							"name": "Copy BillingSubscription",
 							"type": "Copy",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Set variable1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "7.00:00:00",
 								"retry": 0,
@@ -877,6 +887,19 @@
 									"type": "DatasetReference"
 								}
 							]
+						},
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "debugger",
+								"value": {
+									"value": "@item()['Id']",
+									"type": "Expression"
+								}
+							}
 						}
 					]
 				}
@@ -889,6 +912,9 @@
 			"nextLink": {
 				"type": "String",
 				"defaultValue": "0"
+			},
+			"debugger": {
+				"type": "String"
 			}
 		},
 		"annotations": [],
