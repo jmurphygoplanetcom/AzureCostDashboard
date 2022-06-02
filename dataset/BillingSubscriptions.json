@@ -1,0 +1,117 @@
+{
+	"name": "BillingSubscriptions",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureManagementApi",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"BillingAccountId": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": "/providers/Microsoft.Billing/billingAccounts?includeCAID=true&api-version=2019-10-01-preview"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"totalCount": {
+					"type": "integer"
+				},
+				"value": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"properties": {
+								"type": "object",
+								"properties": {
+									"billingProfileId": {
+										"type": "string"
+									},
+									"billingProfileDisplayName": {
+										"type": "string"
+									},
+									"displayName": {
+										"type": "string"
+									},
+									"invoiceSectionId": {
+										"type": "string"
+									},
+									"invoiceSectionDisplayName": {
+										"type": "string"
+									},
+									"skuId": {
+										"type": "string"
+									},
+									"skuDescription": {
+										"type": "string"
+									},
+									"subscriptionBillingStatus": {
+										"type": "string"
+									},
+									"subscriptionBillingStatusReasonDetails": {
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"effectiveDate": {
+													"type": "string"
+												},
+												"subscriptionBillingStatusReason": {
+													"type": "string"
+												}
+											}
+										}
+									},
+									"spendingLimitDetails": {
+										"type": "object",
+										"properties": {
+											"amount": {
+												"type": "number"
+											},
+											"currency": {
+												"type": "string"
+											},
+											"endDate": {
+												"type": "string"
+											},
+											"type": {
+												"type": "string"
+											},
+											"startDate": {
+												"type": "string"
+											},
+											"status": {
+												"type": "string"
+											}
+										}
+									},
+									"subscriptionId": {
+										"type": "string"
+									}
+								}
+							},
+							"type": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

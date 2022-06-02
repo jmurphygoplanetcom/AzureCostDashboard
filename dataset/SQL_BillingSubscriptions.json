@@ -1,0 +1,26 @@
+{
+	"name": "SQL_BillingSubscriptions",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DashboardSQLService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "AccountId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "SubscriptionId",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "BillingSubscriptions"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
