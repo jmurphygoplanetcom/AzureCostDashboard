@@ -897,7 +897,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat('DELETE FROM BillingSubscriptions WHERE AccountId = ''', item()['Id'], '''')",
+										"value": "@concat('DELETE FROM BillingSubscriptions WHERE AccountId = ''', item()['Id'], '''  SELECT 1 AS COMPLETED')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
