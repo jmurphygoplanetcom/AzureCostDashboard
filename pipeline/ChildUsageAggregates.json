@@ -66,19 +66,7 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"writeBehavior": "upsert",
-									"upsertSettings": {
-										"useTempDB": true,
-										"keys": [
-											"UsageStartTime",
-											"UsageEndTime",
-											"SubscriptionId",
-											"InstanceData",
-											"MeterName",
-											"MeterCategory",
-											"MeterSubCategory"
-										]
-									},
+									"writeBehavior": "insert",
 									"sqlWriterUseTableLock": false,
 									"disableMetricsCollection": false
 								},
@@ -174,6 +162,14 @@
 											"sink": {
 												"name": "Quantity",
 												"type": "Float"
+											}
+										},
+										{
+											"source": {
+												"path": "$['usageDate']"
+											},
+											"sink": {
+												"name": "UsageDate"
 											}
 										}
 									],
