@@ -1,0 +1,66 @@
+{
+	"name": "BillingAccounts",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureManagementApi",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": "/providers/Microsoft.Billing/billingAccounts?includeCAID=true&api-version=2019-10-01-preview"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"properties": {
+								"type": "object",
+								"properties": {
+									"accountId": {
+										"type": "string"
+									},
+									"accountStatus": {
+										"type": "string"
+									},
+									"accountType": {
+										"type": "string"
+									},
+									"agreementType": {
+										"type": "string"
+									},
+									"displayName": {
+										"type": "string"
+									},
+									"hasReadAccess": {
+										"type": "boolean"
+									},
+									"organizationId": {
+										"type": "string"
+									}
+								}
+							},
+							"type": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

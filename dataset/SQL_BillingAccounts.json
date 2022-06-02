@@ -1,0 +1,42 @@
+{
+	"name": "SQL_BillingAccounts",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DashboardSQLService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "AccountId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "AccountStatus",
+				"type": "nvarchar"
+			},
+			{
+				"name": "AccountType",
+				"type": "nvarchar"
+			},
+			{
+				"name": "AgreementType",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DisplayName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "OrganizationId",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "BillingAccounts"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
