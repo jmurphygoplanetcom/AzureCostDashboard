@@ -781,7 +781,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('BillingAccounts').output",
+						"value": "@activity('BillingAccounts').output['value']",
 						"type": "Expression"
 					},
 					"isSequential": true,
