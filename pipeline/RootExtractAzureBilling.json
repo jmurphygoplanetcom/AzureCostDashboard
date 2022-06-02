@@ -67,7 +67,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "ForEach4",
+						"activity": "Set access_token",
 						"dependencyConditions": [
 							"Succeeded"
 						]
