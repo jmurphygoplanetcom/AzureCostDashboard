@@ -464,55 +464,6 @@
 									"type": "Expression"
 								}
 							}
-						},
-						{
-							"name": "Lookup1",
-							"type": "Lookup",
-							"dependsOn": [
-								{
-									"activity": "Costs",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"sqlReaderStoredProcedureName": "[dbo].[spInsertDataFlowCosts]",
-									"storedProcedureParameters": {
-										"JSON": {
-											"type": "String",
-											"value": {
-												"value": "@string(activity('Costs').output)",
-												"type": "Expression"
-											}
-										},
-										"ResourceId": {
-											"type": "String",
-											"value": {
-												"value": "@item()['Id']",
-												"type": "Expression"
-											}
-										}
-									},
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"dataset": {
-									"referenceName": "SQL_DataFlowCosts",
-									"type": "DatasetReference"
-								},
-								"firstRowOnly": false
-							}
 						}
 					]
 				}
@@ -564,7 +515,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Lookup Distict Subscription_Location').output",
+						"value": "@activity('Lookup Distict Subscription_Location').output['value']",
 						"type": "Expression"
 					},
 					"isSequential": false,
