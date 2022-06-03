@@ -26,7 +26,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId, '/providers/Microsoft.Commerce/usageAggregates?reportedStartTime=', dataset().startDate, '&reportedEndTime=', dataset().endDate, '&aggregationGranularity=daily &api-version=2015-06-01-preview'), replace(dataset().nextLink, 'https://management.azure.com', ''))",
+					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId, '/providers/Microsoft.Commerce/usageAggregates?reportedStartTime=', dataset().startDate, '&reportedEndTime=', dataset().endDate, '&aggregationGranularity=daily &api-version=2015-06-01-preview'), replace(dataset().nextLink, 'https://management.azure.com:443', ''))",
 					"type": "Expression"
 				}
 			}

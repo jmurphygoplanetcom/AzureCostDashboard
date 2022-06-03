@@ -13,7 +13,7 @@
 						]
 					},
 					{
-						"activity": "Clear Previous Daily Aggregates",
+						"activity": "Delete Subscription UsageAggregates",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -431,7 +431,7 @@
 				"typeProperties": {
 					"variableName": "startDate",
 					"value": {
-						"value": "@formatDateTime(pipeline().parameters.usageDate, 'yyyy-MM-dd')",
+						"value": "@formatDateTime(adddays(pipeline().parameters.usageDate, -365), 'yyyy-MM-dd')",
 						"type": "Expression"
 					}
 				}
@@ -444,7 +444,7 @@
 				"typeProperties": {
 					"variableName": "endDate",
 					"value": {
-						"value": "@formatDateTime(adddays(pipeline().parameters.usageDate, 1), 'yyyy-MM-dd')",
+						"value": "@formatDateTime(pipeline().parameters.usageDate, 'yyyy-MM-dd')",
 						"type": "Expression"
 					}
 				}
@@ -482,7 +482,7 @@
 				}
 			},
 			{
-				"name": "Clear Previous Daily Aggregates",
+				"name": "Delete Subscription UsageAggregates",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -497,7 +497,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "@concat('DELETE FROM UsageAggregates WHERE SubscriptionId = ''', pipeline().parameters.subscriptionId, ''' AND UsageDate = ''', pipeline().parameters.usageDate,  '''  SELECT 1 AS COMPLETED')",
+							"value": "@concat('DELETE FROM UsageAggregates WHERE SubscriptionId = ''', pipeline().parameters.subscriptionId, '''')",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -517,7 +517,7 @@
 			},
 			"usageDate": {
 				"type": "string",
-				"defaultValue": "5/1/2022"
+				"defaultValue": "6/3/2022"
 			}
 		},
 		"variables": {
