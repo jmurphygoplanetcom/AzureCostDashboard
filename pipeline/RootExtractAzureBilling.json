@@ -253,7 +253,7 @@
 										"type": "Expression"
 									},
 									"usageDate": {
-										"value": "@adddays(utcnow(), -1)",
+										"value": "utcnow()",
 										"type": "Expression"
 									}
 								}
