@@ -214,9 +214,22 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
-									"sqlReaderQuery": {
-										"value": "@concat('INSERT INTO DataFlowCosts VALUES ''', activity('Costs').output, ''', ''', item()['Id'], '''')",
-										"type": "Expression"
+									"sqlReaderStoredProcedureName": "[dbo].[spInsertDataFlowCost]",
+									"storedProcedureParameters": {
+										"CostData": {
+											"type": "String",
+											"value": {
+												"value": "@activity('Costs').output",
+												"type": "Expression"
+											}
+										},
+										"ResourceId": {
+											"type": "String",
+											"value": {
+												"value": "@item()['Id']",
+												"type": "Expression"
+											}
+										}
 									},
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
