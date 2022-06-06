@@ -219,7 +219,7 @@
 										"CostData": {
 											"type": "String",
 											"value": {
-												"value": "@activity('Costs').output",
+												"value": "@string(activity('Costs').output)",
 												"type": "Expression"
 											}
 										},
