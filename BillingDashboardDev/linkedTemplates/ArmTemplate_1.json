@@ -6,24 +6,163 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "BillingDashboardDev"
-		},
-		"DashboardSQLService_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'DashboardSQLService'"
-		},
-		"AzureKeyVault_properties_typeProperties_baseUrl": {
-			"type": "string",
-			"defaultValue": "https://JamesDevAzureKeyVault.vault.azure.net/"
-		},
-		"AzureManagementApi_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://management.azure.com/"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Subscribers')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureManagementApi",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": "subscriptions?api-version=2020-01-01"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"value": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "string"
+									},
+									"name": {
+										"type": "string"
+									},
+									"location": {
+										"type": "string"
+									},
+									"properties": {
+										"type": "object",
+										"properties": {
+											"provisioningState": {
+												"type": "string"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/UsageAggregates')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureManagementApi",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"subscriptionId": {
+						"type": "string",
+						"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+					},
+					"nextLink": {
+						"type": "string"
+					},
+					"startDate": {
+						"type": "string"
+					},
+					"endDate": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": {
+							"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId, '/providers/Microsoft.Commerce/usageAggregates?reportedStartTime=', dataset().startDate, '&reportedEndTime=', dataset().endDate, '&aggregationGranularity=daily &api-version=2015-06-01-preview'), replace(dataset().nextLink, 'https://management.azure.com:443', ''))",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"nextLink": {
+							"type": "string"
+						},
+						"value": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "string"
+									},
+									"name": {
+										"type": "string"
+									},
+									"type": {
+										"type": "string"
+									},
+									"properties": {
+										"type": "object",
+										"properties": {
+											"subscriptionId": {
+												"type": "string"
+											},
+											"usageStartTime": {
+												"type": "string"
+											},
+											"usageEndTime": {
+												"type": "string"
+											},
+											"meterName": {
+												"type": "string"
+											},
+											"meterCategory": {
+												"type": "string"
+											},
+											"meterSubCategory": {
+												"type": "string"
+											},
+											"unit": {
+												"type": "string"
+											},
+											"instanceData": {
+												"type": "string"
+											},
+											"meterId": {
+												"type": "string"
+											},
+											"infoFields": {
+												"type": "object"
+											},
+											"quantity": {
+												"type": "float"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ChildPriceLists')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -568,11 +707,7 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/PriceLists')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_PriceLists')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ChildResourceGroups')]",
@@ -943,11 +1078,7 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ResourceGroups')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_ResourceGroups')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ChildResources')]",
@@ -1332,11 +1463,7 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]",
-				"[concat(variables('factoryId'), '/datasets/Resources')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ChildUsageAggregates')]",
@@ -1892,10 +2019,110 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SQL_UsageAggregates')]",
-				"[concat(variables('factoryId'), '/datasets/UsageAggregates')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
+				"[concat(variables('factoryId'), '/datasets/UsageAggregates')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ParseResourceCosts')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SQL_DataFlowCosts",
+								"type": "DatasetReference"
+							},
+							"name": "DataFlowCosts"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "SQL_Costs",
+								"type": "DatasetReference"
+							},
+							"name": "Costs"
+						}
+					],
+					"transformations": [
+						{
+							"name": "parse1"
+						},
+						{
+							"name": "flatten1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "AlterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          JsonResult as string,",
+						"          ResourceId as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     limit: 9999999,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> DataFlowCosts",
+						"DataFlowCosts parse(JsonResult = JsonResult ? (id as string,",
+						"          name as string,",
+						"          type as string,",
+						"          properties as (nextLink as string,",
+						"          columns as (name as string,",
+						"     type as string)[],",
+						"          rows as string[])),",
+						"     format: 'json',",
+						"     documentForm: 'singleDocument') ~> parse1",
+						"parse1 foldDown(unroll(JsonResult.properties.rows),",
+						"     mapColumn(",
+						"          costRows = JsonResult.properties.rows,",
+						"          flattenResourceId = ResourceId",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flatten1",
+						"flatten1 derive(costRows = costRows,",
+						"          cost = toDouble(split(substring(costRows, 2, length(costRows)-2), ',')[1]),",
+						"          costUSD = toDouble(split(substring(costRows, 2, length(costRows)-2), ',')[2]),",
+						"          usageDate = toInteger(split(substring(costRows, 2, length(costRows)-2), ',')[3]),",
+						"          currency = split(substring(costRows, 2, length(costRows)-2), ',')[4]) ~> derivedColumn1",
+						"derivedColumn1 alterRow(upsertIf(usageDate>0)) ~> AlterRow1",
+						"AlterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ResourceId as string,",
+						"          Cost as decimal(18,4),",
+						"          CostUSD as decimal(18,4),",
+						"          UsageDate as integer,",
+						"          Currency as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['ResourceId','UsageDate'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CostUSD = costUSD,",
+						"          UsageDate = usageDate,",
+						"          Currency = currency,",
+						"          ResourceId = flattenResourceId,",
+						"          Cost = cost",
+						"     )) ~> Costs"
+					]
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/RootExtractAzureBilling')]",
@@ -2836,1424 +3063,10 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/Subscribers')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_Subscribers')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_ResourceGroups')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]",
-				"[concat(variables('factoryId'), '/datasets/BillingAccounts')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_BillingAccounts')]",
 				"[concat(variables('factoryId'), '/pipelines/ChildResourceGroups')]",
 				"[concat(variables('factoryId'), '/pipelines/ChildUsageAggregates')]",
 				"[concat(variables('factoryId'), '/pipelines/ChildResources')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_DataFlowCosts')]",
-				"[concat(variables('factoryId'), '/pipelines/ChildPriceLists')]",
-				"[concat(variables('factoryId'), '/datasets/BillingSubscriptions')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_BillingSubscriptions')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/BillingAccounts')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureManagementApi",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation",
-						"relativeUrl": "/providers/Microsoft.Billing/billingAccounts?includeCAID=true&api-version=2019-10-01-preview"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"value": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"id": {
-										"type": "string"
-									},
-									"name": {
-										"type": "string"
-									},
-									"properties": {
-										"type": "object",
-										"properties": {
-											"accountId": {
-												"type": "string"
-											},
-											"accountStatus": {
-												"type": "string"
-											},
-											"accountType": {
-												"type": "string"
-											},
-											"agreementType": {
-												"type": "string"
-											},
-											"displayName": {
-												"type": "string"
-											},
-											"hasReadAccess": {
-												"type": "boolean"
-											},
-											"organizationId": {
-												"type": "string"
-											}
-										}
-									},
-									"type": {
-										"type": "string"
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/BillingSubscriptions')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureManagementApi",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"BillingAccountId": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation",
-						"relativeUrl": {
-							"value": "@concat(dataset().BillingAccountId, '/billingSubscriptions?api-version=2019-10-01-preview&excludeCharges=true')",
-							"type": "Expression"
-						}
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"totalCount": {
-							"type": "integer"
-						},
-						"value": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"id": {
-										"type": "string"
-									},
-									"name": {
-										"type": "string"
-									},
-									"properties": {
-										"type": "object",
-										"properties": {
-											"billingProfileId": {
-												"type": "string"
-											},
-											"billingProfileDisplayName": {
-												"type": "string"
-											},
-											"displayName": {
-												"type": "string"
-											},
-											"invoiceSectionId": {
-												"type": "string"
-											},
-											"invoiceSectionDisplayName": {
-												"type": "string"
-											},
-											"skuId": {
-												"type": "string"
-											},
-											"skuDescription": {
-												"type": "string"
-											},
-											"subscriptionBillingStatus": {
-												"type": "string"
-											},
-											"subscriptionBillingStatusReasonDetails": {
-												"type": "array",
-												"items": {
-													"type": "object",
-													"properties": {
-														"effectiveDate": {
-															"type": "string"
-														},
-														"subscriptionBillingStatusReason": {
-															"type": "string"
-														}
-													}
-												}
-											},
-											"spendingLimitDetails": {
-												"type": "object",
-												"properties": {
-													"amount": {
-														"type": "number"
-													},
-													"currency": {
-														"type": "string"
-													},
-													"endDate": {
-														"type": "string"
-													},
-													"type": {
-														"type": "string"
-													},
-													"startDate": {
-														"type": "string"
-													},
-													"status": {
-														"type": "string"
-													}
-												}
-											},
-											"subscriptionId": {
-												"type": "string"
-											}
-										}
-									},
-									"type": {
-										"type": "string"
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Costs')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureManagementApi",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"resourceGroupId": {
-						"type": "string",
-						"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
-					}
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation",
-						"relativeUrl": {
-							"value": "@concat(dataset().resourceGroupId, '/providers/Microsoft.CostManagement/query?api-version=2021-10-01&$top=5000')",
-							"type": "Expression"
-						}
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"id": {
-							"type": "string"
-						},
-						"name": {
-							"type": "string"
-						},
-						"type": {
-							"type": "string"
-						},
-						"location": {
-							"type": "null"
-						},
-						"sku": {
-							"type": "null"
-						},
-						"eTag": {
-							"type": "null"
-						},
-						"properties": {
-							"type": "object",
-							"properties": {
-								"nextLink": {
-									"type": "null"
-								},
-								"columns": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"name": {
-												"type": "string"
-											},
-											"type": {
-												"type": "string"
-											}
-										}
-									}
-								},
-								"rows": {
-									"type": "array",
-									"items": {
-										"type": "array",
-										"items": {
-											"type": "number"
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/PriceLists')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureManagementApi",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"subscriptionId": {
-						"type": "string",
-						"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
-					},
-					"nextLink": {
-						"type": "string"
-					},
-					"armRegionName": {
-						"type": "string",
-						"defaultValue": "eastus"
-					}
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation",
-						"relativeUrl": {
-							"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/providers/Microsoft.Consumption/pricesheets/default?api-version=2020-01-01-preview&$filter=armRegionName eq ''', dataset().armRegionName, '''' ), replace(dataset().nextLink, 'https://management.azure.com:443', ''))",
-							"type": "Expression"
-						}
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"BillingCurrency": {
-							"type": "string"
-						},
-						"CustomerEntityId": {
-							"type": "string"
-						},
-						"CustomerEntityType": {
-							"type": "string"
-						},
-						"Items": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"currencyCode": {
-										"type": "string"
-									},
-									"tierMinimumUnits": {
-										"type": "number"
-									},
-									"retailPrice": {
-										"type": "number"
-									},
-									"unitPrice": {
-										"type": "number"
-									},
-									"discount": {
-										"type": "number"
-									},
-									"armRegionName": {
-										"type": "string"
-									},
-									"location": {
-										"type": "string"
-									},
-									"effectiveStartDate": {
-										"type": "string"
-									},
-									"meterId": {
-										"type": "string"
-									},
-									"meterName": {
-										"type": "string"
-									},
-									"productId": {
-										"type": "string"
-									},
-									"skuId": {
-										"type": "string"
-									},
-									"productName": {
-										"type": "string"
-									},
-									"skuName": {
-										"type": "string"
-									},
-									"serviceName": {
-										"type": "string"
-									},
-									"serviceId": {
-										"type": "string"
-									},
-									"serviceFamily": {
-										"type": "string"
-									},
-									"unitOfMeasure": {
-										"type": "string"
-									},
-									"type": {
-										"type": "string"
-									},
-									"isPrimaryMeterRegion": {
-										"type": "boolean"
-									},
-									"armSkuName": {
-										"type": "string"
-									}
-								}
-							}
-						},
-						"NextPageLink": {
-							"type": "string"
-						},
-						"Count": {
-							"type": "integer"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ResourceGroups')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureManagementApi",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"subscriptionId": {
-						"type": "string",
-						"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
-					},
-					"nextLink": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation",
-						"relativeUrl": {
-							"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/resourcegroups?api-version=2017-05-10'), replace(dataset().nextLink, 'https://management.azure.com', ''))",
-							"type": "Expression"
-						}
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"value": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"id": {
-										"type": "string"
-									},
-									"authorizationSource": {
-										"type": "string"
-									},
-									"managedByTenants": {
-										"type": "array"
-									},
-									"subscriptionId": {
-										"type": "string"
-									},
-									"tenantId": {
-										"type": "string"
-									},
-									"displayName": {
-										"type": "string"
-									},
-									"state": {
-										"type": "string"
-									},
-									"subscriptionPolicies": {
-										"type": "object",
-										"properties": {
-											"locationPlacementId": {
-												"type": "string"
-											},
-											"quotaId": {
-												"type": "string"
-											},
-											"spendingLimit": {
-												"type": "string"
-											}
-										}
-									}
-								}
-							}
-						},
-						"count": {
-							"type": "object",
-							"properties": {
-								"type": {
-									"type": "string"
-								},
-								"value": {
-									"type": "integer"
-								}
-							}
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Resources')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureManagementApi",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"resourceGroupPath": {
-						"type": "string",
-						"defaultValue": "/subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourceGroups/FMCSPortalResourceGroup"
-					},
-					"nextLink": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation",
-						"relativeUrl": {
-							"value": "@if(empty(dataset().nextLink), concat(dataset().resourceGroupPath, '/resources?api-version=2021-04-01'), dataset().nextLink)",
-							"type": "Expression"
-						}
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"value": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"id": {
-										"type": "string"
-									},
-									"name": {
-										"type": "string"
-									},
-									"type": {
-										"type": "string"
-									},
-									"sku": {
-										"type": "object",
-										"properties": {
-											"name": {
-												"type": "string"
-											},
-											"tier": {
-												"type": "string"
-											},
-											"size": {
-												"type": "string"
-											},
-											"family": {
-												"type": "string"
-											},
-											"capacity": {
-												"type": "integer"
-											}
-										}
-									},
-									"kind": {
-										"type": "string"
-									},
-									"location": {
-										"type": "string"
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_BillingAccounts')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Id",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "AccountId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "AccountStatus",
-						"type": "nvarchar"
-					},
-					{
-						"name": "AccountType",
-						"type": "nvarchar"
-					},
-					{
-						"name": "AgreementType",
-						"type": "nvarchar"
-					},
-					{
-						"name": "DisplayName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "OrganizationId",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "BillingAccounts"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_BillingSubscriptions')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "AccountId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "SubscriptionId",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "BillingSubscriptions"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_Budgets')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Id",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ResourceGroupId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Type",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Kind",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Location",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Budgets"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_Costs')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "ResourceId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Cost",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 4
-					},
-					{
-						"name": "CostUSD",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 4
-					},
-					{
-						"name": "UsageDate",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Currency",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Costs"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_DataFlowCosts')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "JsonResult",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ResourceId",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "DataFlowCosts"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_ExecuteTSQL')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_PriceLists')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "CurrencyCode",
-						"type": "nvarchar"
-					},
-					{
-						"name": "TierMinimumUnits",
-						"type": "float",
-						"precision": 15
-					},
-					{
-						"name": "RetailPrice",
-						"type": "float",
-						"precision": 15
-					},
-					{
-						"name": "UnitPrice",
-						"type": "float",
-						"precision": 15
-					},
-					{
-						"name": "Discount",
-						"type": "float",
-						"precision": 15
-					},
-					{
-						"name": "ArmRegionName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Location",
-						"type": "nvarchar"
-					},
-					{
-						"name": "EffectiveStartDate",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "MeterId",
-						"type": "uniqueidentifier"
-					},
-					{
-						"name": "MeterName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ProductId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "SkuId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ProductName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "SkuName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ServiceName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ServiceId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ServiceFamily",
-						"type": "nvarchar"
-					},
-					{
-						"name": "UnitOfMeasure",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Type",
-						"type": "nvarchar"
-					},
-					{
-						"name": "isPrimaryMeterRegion",
-						"type": "bit"
-					},
-					{
-						"name": "ArmSkuName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "SubscriptionId",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "PriceLists"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_ResourceGroups')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Id",
-						"type": "nvarchar"
-					},
-					{
-						"name": "SubscriptionId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Location",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "ResourceGroups"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_Resources')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Id",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ResourceGroupId",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Type",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Kind",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Location",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Resources"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_Subscribers')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Id",
-						"type": "nvarchar"
-					},
-					{
-						"name": "AuthorizationSource",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Subscriptions"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_UsageAggregates')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "DashboardSQLService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "SubscriptionId",
-						"type": "uniqueidentifier"
-					},
-					{
-						"name": "UsageStartTime",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "UsageEndTime",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "MeterName",
-						"type": "nvarchar"
-					},
-					{
-						"name": "MeterCategory",
-						"type": "nvarchar"
-					},
-					{
-						"name": "MeterSubCategory",
-						"type": "nvarchar"
-					},
-					{
-						"name": "Unit",
-						"type": "nvarchar"
-					},
-					{
-						"name": "InstanceData",
-						"type": "nvarchar"
-					},
-					{
-						"name": "MeterId",
-						"type": "uniqueidentifier"
-					},
-					{
-						"name": "Quantity",
-						"type": "float",
-						"precision": 15
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "UsageAggregates"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/DashboardSQLService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Subscribers')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureManagementApi",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation",
-						"relativeUrl": "subscriptions?api-version=2020-01-01"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"value": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"id": {
-										"type": "string"
-									},
-									"name": {
-										"type": "string"
-									},
-									"location": {
-										"type": "string"
-									},
-									"properties": {
-										"type": "object",
-										"properties": {
-											"provisioningState": {
-												"type": "string"
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/UsageAggregates')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureManagementApi",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"subscriptionId": {
-						"type": "string",
-						"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
-					},
-					"nextLink": {
-						"type": "string"
-					},
-					"startDate": {
-						"type": "string"
-					},
-					"endDate": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation",
-						"relativeUrl": {
-							"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId, '/providers/Microsoft.Commerce/usageAggregates?reportedStartTime=', dataset().startDate, '&reportedEndTime=', dataset().endDate, '&aggregationGranularity=daily &api-version=2015-06-01-preview'), replace(dataset().nextLink, 'https://management.azure.com:443', ''))",
-							"type": "Expression"
-						}
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"nextLink": {
-							"type": "string"
-						},
-						"value": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"id": {
-										"type": "string"
-									},
-									"name": {
-										"type": "string"
-									},
-									"type": {
-										"type": "string"
-									},
-									"properties": {
-										"type": "object",
-										"properties": {
-											"subscriptionId": {
-												"type": "string"
-											},
-											"usageStartTime": {
-												"type": "string"
-											},
-											"usageEndTime": {
-												"type": "string"
-											},
-											"meterName": {
-												"type": "string"
-											},
-											"meterCategory": {
-												"type": "string"
-											},
-											"meterSubCategory": {
-												"type": "string"
-											},
-											"unit": {
-												"type": "string"
-											},
-											"instanceData": {
-												"type": "string"
-											},
-											"meterId": {
-												"type": "string"
-											},
-											"infoFields": {
-												"type": "object"
-											},
-											"quantity": {
-												"type": "float"
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureManagementApi')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureKeyVault')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureKeyVault",
-				"typeProperties": {
-					"baseUrl": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureManagementApi')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "HttpServer",
-				"typeProperties": {
-					"url": "[parameters('AzureManagementApi_properties_typeProperties_url')]",
-					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DashboardSQLService')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": "[parameters('DashboardSQLService_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ParseResourceCosts')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "SQL_DataFlowCosts",
-								"type": "DatasetReference"
-							},
-							"name": "DataFlowCosts"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "SQL_Costs",
-								"type": "DatasetReference"
-							},
-							"name": "Costs"
-						}
-					],
-					"transformations": [
-						{
-							"name": "parse1"
-						},
-						{
-							"name": "flatten1"
-						},
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "AlterRow1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          JsonResult as string,",
-						"          ResourceId as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     limit: 9999999,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> DataFlowCosts",
-						"DataFlowCosts parse(JsonResult = JsonResult ? (id as string,",
-						"          name as string,",
-						"          type as string,",
-						"          properties as (nextLink as string,",
-						"          columns as (name as string,",
-						"     type as string)[],",
-						"          rows as string[])),",
-						"     format: 'json',",
-						"     documentForm: 'singleDocument') ~> parse1",
-						"parse1 foldDown(unroll(JsonResult.properties.rows),",
-						"     mapColumn(",
-						"          costRows = JsonResult.properties.rows,",
-						"          flattenResourceId = ResourceId",
-						"     ),",
-						"     skipDuplicateMapInputs: false,",
-						"     skipDuplicateMapOutputs: false) ~> flatten1",
-						"flatten1 derive(costRows = costRows,",
-						"          cost = toDouble(split(substring(costRows, 2, length(costRows)-2), ',')[1]),",
-						"          costUSD = toDouble(split(substring(costRows, 2, length(costRows)-2), ',')[2]),",
-						"          usageDate = toInteger(split(substring(costRows, 2, length(costRows)-2), ',')[3]),",
-						"          currency = split(substring(costRows, 2, length(costRows)-2), ',')[4]) ~> derivedColumn1",
-						"derivedColumn1 alterRow(upsertIf(usageDate>0)) ~> AlterRow1",
-						"AlterRow1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          ResourceId as string,",
-						"          Cost as decimal(18,4),",
-						"          CostUSD as decimal(18,4),",
-						"          UsageDate as integer,",
-						"          Currency as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:false,",
-						"     updateable:false,",
-						"     upsertable:true,",
-						"     keys:['ResourceId','UsageDate'],",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 1,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          CostUSD = costUSD,",
-						"          UsageDate = usageDate,",
-						"          Currency = currency,",
-						"          ResourceId = flattenResourceId,",
-						"          Cost = cost",
-						"     )) ~> Costs"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SQL_DataFlowCosts')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_Costs')]"
+				"[concat(variables('factoryId'), '/pipelines/ChildPriceLists')]"
 			]
 		},
 		{
@@ -4598,9 +3411,7 @@
 				"lastPublishTime": "2022-03-18T14:52:37Z"
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SQL_Resources')]",
-				"[concat(variables('factoryId'), '/dataflows/ParseResourceCosts')]",
-				"[concat(variables('factoryId'), '/datasets/SQL_DataFlowCosts')]"
+				"[concat(variables('factoryId'), '/dataflows/ParseResourceCosts')]"
 			]
 		}
 	]
