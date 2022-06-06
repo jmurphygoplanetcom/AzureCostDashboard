@@ -464,6 +464,41 @@
 									"type": "Expression"
 								}
 							}
+						},
+						{
+							"name": "Lookup1",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Costs",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@concat('INSERT INTO DataFlowCosts VALUES ''', activity('Costs').output, ''', ''', item()['Id'], '''')",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "SQL_DataFlowCosts",
+									"type": "DatasetReference"
+								}
+							}
 						}
 					]
 				}

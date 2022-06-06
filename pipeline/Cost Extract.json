@@ -1,0 +1,250 @@
+{
+	"name": "Cost Extract",
+	"properties": {
+		"activities": [
+			{
+				"name": "OAuthToken",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "AzureKeyValue Secret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "AzureKeyValue ClientId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://login.microsoftonline.com/', pipeline().globalParameters.tenantId, '/oauth2/token')",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@concat('grant_type=client_credentials&client_id=', activity('AzureKeyValue ClientId').output['value'], '&client_secret=', activity('AzureKeyValue Secret').output['value'], '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set access_token",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "OAuthToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "access_token",
+					"value": {
+						"value": "@concat('Bearer ', activity('OAuthToken').output['access_token'])",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "AzureKeyValue Secret",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_secret_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "AzureKeyValue ClientId",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_id_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "SQL Resources",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set access_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "SQL_Resources",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach3",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "SQL Resources",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('SQL Resources').output['value']",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Costs",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat('https://management.azure.com', item()['ResourceGroupId'] ,'/providers/Microsoft.CostManagement/query?api-version=2021-10-01&$top=5000')",
+									"type": "Expression"
+								},
+								"method": "POST",
+								"headers": {
+									"Content-Type": "application/json",
+									"Authorization": {
+										"value": "@variables('access_token')",
+										"type": "Expression"
+									}
+								},
+								"body": {
+									"value": "@concat('{\"type\":\"ActualCost\",\"dataSet\":{\"granularity\":\"Daily\",\"aggregation\":{\"totalCost\":{\"name\":\"Cost\",\"function\":\"Sum\"},\"totalCostUSD\":{\"name\":\"CostUSD\",\"function\":\"Sum\"}},\"sorting\":[{\"direction\":\"ascending\",\"name\":\"UsageDate\"}],\"filter\":{\"And\":[{\"Dimensions\":{\"Name\":\"PublisherType\",\"Operator\":\"In\",\"Values\":[\"azure\"]}},{\"Dimensions\":{\"Name\":\"ResourceId\",\"Operator\":\"In\",\"Values\":[\"', item()['Id'] ,'\"]}}]}}}')",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Lookup1",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Costs",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@concat('INSERT INTO DataFlowCosts VALUES ''', activity('Costs').output, ''', ''', item()['Id'], '''')",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "SQL_DataFlowCosts",
+									"type": "DatasetReference"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"access_token": {
+				"type": "String"
+			},
+			"nextLink": {
+				"type": "String",
+				"defaultValue": "0"
+			},
+			"debugger": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-03-18T14:52:37Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
