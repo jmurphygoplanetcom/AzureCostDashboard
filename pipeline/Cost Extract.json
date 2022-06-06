@@ -244,7 +244,8 @@
 				}
 			},
 			{
-				"name": "Data flow1",
+				"name": "Data flow Parse Resource Costs",
+				"description": "",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
@@ -275,11 +276,12 @@
 				}
 			},
 			{
-				"name": "Lookup2",
+				"name": "Update Dates",
+				"description": "Date values returned from API are integer based. Parse these to type DATE.",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Data flow1",
+						"activity": "Data flow Parse Resource Costs",
 						"dependencyConditions": [
 							"Succeeded"
 						]
