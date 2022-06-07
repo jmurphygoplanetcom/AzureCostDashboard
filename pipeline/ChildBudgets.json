@@ -93,20 +93,29 @@
 										},
 										{
 											"source": {
-												"path": "['location']"
+												"path": "['properties']['timePeriod']['startDate']"
 											},
 											"sink": {
-												"name": "Location",
-												"type": "String"
+												"name": "StartDate",
+												"type": "DateTime"
 											}
 										},
 										{
 											"source": {
-												"path": "$['subscriptionId']"
+												"path": "['properties']['timePeriod']['endDate']"
 											},
 											"sink": {
-												"name": "SubscriptionId",
-												"type": "String"
+												"name": "EndDate",
+												"type": "DateTime"
+											}
+										},
+										{
+											"source": {
+												"path": "['properties']['amount']"
+											},
+											"sink": {
+												"name": "Amount",
+												"type": "Double"
 											}
 										}
 									],
@@ -132,7 +141,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "SQL_ResourceGroups",
+									"referenceName": "SQL_Budgets",
 									"type": "DatasetReference"
 								}
 							]
