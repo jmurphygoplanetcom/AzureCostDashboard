@@ -1,0 +1,361 @@
+{
+	"name": "ChildBudgets",
+	"properties": {
+		"activities": [
+			{
+				"name": "Until No Next Link",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Set access_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('exitLoop'), true)",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy Resource Groups",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"additionalColumns": [
+										{
+											"name": "subscriptionId",
+											"value": {
+												"value": "@pipeline().parameters.subscriptionId",
+												"type": "Expression"
+											}
+										}
+									],
+									"storeSettings": {
+										"type": "HttpReadSettings",
+										"requestMethod": "GET",
+										"additionalHeaders": {
+											"value": "@{concat('Authorization:', variables('access_token'))}",
+											"type": "Expression"
+										},
+										"requestTimeout": ""
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											"Id"
+										]
+									},
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['id']"
+											},
+											"sink": {
+												"name": "Id",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['name']"
+											},
+											"sink": {
+												"name": "Name",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "['location']"
+											},
+											"sink": {
+												"name": "Location",
+												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "$['subscriptionId']"
+											},
+											"sink": {
+												"name": "SubscriptionId",
+												"type": "String"
+											}
+										}
+									],
+									"collectionReference": "$['value']",
+									"mapComplexValuesToString": true
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ResourceGroups",
+									"type": "DatasetReference",
+									"parameters": {
+										"subscriptionId": {
+											"value": "@pipeline().parameters.subscriptionId",
+											"type": "Expression"
+										},
+										"nextLink": {
+											"value": "@if(empty(variables('nextLink')), '', variables('nextLink'))",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "SQL_ResourceGroups",
+									"type": "DatasetReference"
+								}
+							]
+						},
+						{
+							"name": "NextLinkCheck",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Copy Resource Groups",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@if(empty(variables('nextLink')), concat('https://management.azure.com/subscriptions/', pipeline().parameters.subscriptionId, '/resourcegroups?api-version=2017-05-10'), variables('nextLink'))",
+									"type": "Expression"
+								},
+								"method": "GET",
+								"headers": {
+									"Authorization": {
+										"value": "@variables('access_token')",
+										"type": "Expression"
+									}
+								},
+								"linkedServices": [
+									{
+										"referenceName": "AzureManagementApi",
+										"type": "LinkedServiceReference"
+									}
+								]
+							}
+						},
+						{
+							"name": "If Next Link Null",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "NextLinkCheck",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@empty(activity('NextLinkCheck').output?.nextLink)",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Set Next Link",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "nextLink",
+											"value": {
+												"value": "@activity('NextLinkCheck').output?.nextLink",
+												"type": "Expression"
+											}
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Set ExitLoop True",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "exitLoop",
+											"value": true
+										}
+									}
+								]
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			},
+			{
+				"name": "OAuthToken",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "AzureKeyValue Secret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "AzureKeyValue ClientId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://login.microsoftonline.com/', pipeline().globalParameters.tenantId, '/oauth2/token')",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@concat('grant_type=client_credentials&client_id=', activity('AzureKeyValue ClientId').output['value'], '&client_secret=', activity('AzureKeyValue Secret').output['value'], '&resource=https%3A%2F%2Fmanagement.azure.com%2F')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set access_token",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "OAuthToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "access_token",
+					"value": {
+						"value": "@concat('Bearer ', activity('OAuthToken').output['access_token'])",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "AzureKeyValue Secret",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_secret_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "AzureKeyValue ClientId",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().globalParameters.azurekeyvault_client_id_secretidentifier",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"subscriptionId": {
+				"type": "string",
+				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+			}
+		},
+		"variables": {
+			"nextLink": {
+				"type": "String"
+			},
+			"access_token": {
+				"type": "String"
+			},
+			"exitLoop": {
+				"type": "Boolean",
+				"defaultValue": false
+			},
+			"debug": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}

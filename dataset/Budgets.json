@@ -1,0 +1,128 @@
+{
+	"name": "Budgets",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureManagementApi",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"subscriptionId": {
+				"type": "string",
+				"defaultValue": "89e6ade6-e91a-4152-bf83-9c83a3cb6ae3"
+			},
+			"nextLink": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "@if(empty(dataset().nextLink), concat('subscriptions/', dataset().subscriptionId,'/providers/Microsoft.Consumption/budgets?api-version=2021-10-01'), replace(dataset().nextLink, 'https://management.azure.com', ''))",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"type": {
+								"type": "string"
+							},
+							"eTag": {
+								"type": "string"
+							},
+							"properties": {
+								"type": "object",
+								"properties": {
+									"timePeriod": {
+										"type": "object",
+										"properties": {
+											"startDate": {
+												"type": "string"
+											},
+											"endDate": {
+												"type": "string"
+											}
+										}
+									},
+									"timeGrain": {
+										"type": "string"
+									},
+									"amount": {
+										"type": "number"
+									},
+									"currentSpend": {
+										"type": "object",
+										"properties": {
+											"amount": {
+												"type": "number"
+											},
+											"unit": {
+												"type": "string"
+											}
+										}
+									},
+									"category": {
+										"type": "string"
+									},
+									"notifications": {
+										"type": "object",
+										"properties": {
+											"actual_GreaterThan_95_Percent": {
+												"type": "object",
+												"properties": {
+													"enabled": {
+														"type": "boolean"
+													},
+													"operator": {
+														"type": "string"
+													},
+													"threshold": {
+														"type": "number"
+													},
+													"contactEmails": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														}
+													},
+													"contactRoles": {
+														"type": "array"
+													},
+													"contactGroups": {
+														"type": "array"
+													},
+													"thresholdType": {
+														"type": "string"
+													}
+												}
+											}
+										}
+									},
+									"filter": {
+										"type": "object"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
