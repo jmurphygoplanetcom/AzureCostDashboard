@@ -28,6 +28,9 @@
 		"schema": {
 			"type": "object",
 			"properties": {
+				"nextLink": {
+					"type": "string"
+				},
 				"value": {
 					"type": "array",
 					"items": {
