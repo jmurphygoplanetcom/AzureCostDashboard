@@ -17,6 +17,18 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "Set startDate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set endDate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -307,6 +319,32 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "Set startDate",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "startDate",
+					"value": {
+						"value": "@formatDateTime(adddays(pipeline().parameters.usageDate, -365), 'yyyy-MM-dd')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set endDate",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "endDate",
+					"value": {
+						"value": "@formatDateTime(pipeline().parameters.usageDate, 'yyyy-MM-dd')",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"variables": {
@@ -317,7 +355,13 @@
 				"type": "String",
 				"defaultValue": "0"
 			},
-			"debugger": {
+			"resourceIds": {
+				"type": "Array"
+			},
+			"startDate": {
+				"type": "String"
+			},
+			"endDate": {
 				"type": "String"
 			}
 		},
