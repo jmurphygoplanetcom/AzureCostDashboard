@@ -21,7 +21,7 @@
 					},
 					"activities": [
 						{
-							"name": "Copy Resource Groups",
+							"name": "Copy Budgets",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -116,7 +116,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "ResourceGroups",
+									"referenceName": "Budgets",
 									"type": "DatasetReference",
 									"parameters": {
 										"subscriptionId": {
@@ -142,7 +142,7 @@
 							"type": "WebActivity",
 							"dependsOn": [
 								{
-									"activity": "Copy Resource Groups",
+									"activity": "Copy Budgets",
 									"dependencyConditions": [
 										"Succeeded"
 									]
