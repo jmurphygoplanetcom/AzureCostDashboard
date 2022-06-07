@@ -749,23 +749,24 @@
 						"type": "nvarchar"
 					},
 					{
-						"name": "ResourceGroupId",
-						"type": "nvarchar"
-					},
-					{
 						"name": "Name",
 						"type": "nvarchar"
 					},
 					{
-						"name": "Type",
-						"type": "nvarchar"
+						"name": "StartDate",
+						"type": "date"
 					},
 					{
-						"name": "Kind",
-						"type": "nvarchar"
+						"name": "EndDate",
+						"type": "date"
 					},
 					{
-						"name": "Location",
+						"name": "Amount",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "SubscriptionId",
 						"type": "nvarchar"
 					}
 				],
