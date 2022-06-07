@@ -309,11 +309,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"Date": {
-				"type": "string"
-			}
-		},
 		"variables": {
 			"access_token": {
 				"type": "String"
@@ -321,15 +316,6 @@
 			"nextLink": {
 				"type": "String",
 				"defaultValue": "0"
-			},
-			"resourceIds": {
-				"type": "Array"
-			},
-			"startDate": {
-				"type": "String"
-			},
-			"endDate": {
-				"type": "String"
 			}
 		},
 		"annotations": [],
