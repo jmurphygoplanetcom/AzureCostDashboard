@@ -1,5 +1,5 @@
 {
-	"name": "RootExtractAzureBilling",
+	"name": "Full Refresh",
 	"properties": {
 		"activities": [
 			{
