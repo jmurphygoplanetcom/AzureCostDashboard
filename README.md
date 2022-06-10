@@ -133,6 +133,9 @@ https://docs.microsoft.com/en-us/azure-stack/operator/azure-stack-tenant-resourc
 
 # Additional Data Flow
 The cost management queries return an array of data which isn’t condusive to being directly populated within the SQL database. To accommodate this, we use an Azure Data Factory Data Flow.
+
+![Dataflow](/images/Dataflow1.png)
+
 (Sample of cost data)
 ```json
 {
@@ -321,5 +324,17 @@ PROCEDURE spCreateBudget
 # PowerBI Design
 The PowerBi report will display cost management data and enable viewing of data by resource group, billing account and subscriptions.  The report will provide a list view with filters and graphs for data visualization.
 
+![Dashboard](/images/Dashboard1.png)
 
+![Dashboard](/images/Dashboard2.png)
+
+![Dashboard](/images/Dashboard3.png)
+
+![Dashboard](/images/Dashboard4.png)
+
+![Dashboard](/images/Dashboard5.png)
+
+![Dashboard](/images/Dashboard6.png)
+
+![Dashboard](/images/Dashboard7.png)
 
