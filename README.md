@@ -296,6 +296,28 @@ The cost management queries return an array of data which isn’t condusive to b
 -	Derived Column: Extracts each array position as a cost column
 -	Costs: Sink return set for the parsed data
 
+# Budgets
+Budgets can be created to compare and measure costs of a subscription and one or more resource groups. To create a new budget execute the following SQL script.
+
+```sql
+--Create a new budget
+EXEC spCreateBudget 'My New Budget', '6/1/2022', '6/1/2023', 17.00, 'James Murphy – MPN'
+
+PROCEDURE spCreateBudget
+(
+	-- Unique name of the budget
+	@Name NVARCHAR(50),
+	-- Start time for measurement of the budget
+	@StartDate DATETIME,
+	-- End time for measurement of the budget
+	@EndDate DATETIME,
+	-- Amount to include in the budget
+	@Amount FLOAT,
+	-- Name of the subscription, resource group, or resource to include in the budget
+	@AzureName NVARCHAR(2000)
+)
+```
+
 # PowerBI Design
 The PowerBi report will display cost management data and enable viewing of data by resource group, billing account and subscriptions.  The report will provide a list view with filters and graphs for data visualization.
 
