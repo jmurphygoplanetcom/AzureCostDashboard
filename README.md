@@ -35,6 +35,16 @@ This Azure ARM Template will have a permanent location at a future date after th
 
 ### Installation
 
+After standing up a new data factory instance create the following global parameters:
+- "tenantId" - (string) The GUID of the Azure Tenant
+- "azurekeyvault_client_secret_secretidentifier" - (string) The URL provided by azure key vault for the secret identifier
+- "azurekeyvault_client_id_secretidentifier" - (string) The URL provided by azure key vault for the id identifier
+
+Create the following linked services to your Azure Resources:
+- "AzureKeyVault" (Azure Key Vault)
+- "AzureManagementApi" (HTTP) Base url will be "https://management.azure.com/"; type will be "Anonymous"
+- "DashboardSQLService" (Azure SQL Database)
+
 Deploy the arm template.
 https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/quickstart-create-templates-use-the-portal
 
