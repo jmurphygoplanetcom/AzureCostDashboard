@@ -1,37 +1,43 @@
 # _Azure Cost Dashboard_
 
 # Summary
-The GitHub project contains artifacts to aggregate Azure Consumption data into a Managed SQL instance using data factory pipelines and a PowerBI report to show the costs and billing data from Azure.  All data will be updated once a day and presented through PowerBi for analysis and review.
 
+This GitHub project contains artifacts to aggregate Azure consumption data into an Azure SQL Managed Instance using data factory pipelines and a Power BI report to show the costs and billing data from Azure.  All data will be updated once a day and presented through Power BI for analysis and review.
 
 # Setup and Installation
+
 ### Prerequisites 
+
 - Azure SQL Server
-- - Ensure that your Azure SQL Server has either full access by tenant azure resources OR firewall access to Azure Data Factory runtime IP address(es)
-- - Create SQL login/password with owner DB permissions
-- Azure Key Vault
-- Permissions to create service principle
-- Permissions to assign RBAC
+  - Ensure that your Azure SQL Server has either full access by tenant azure resources OR firewall access to Azure Data Factory runtime IP address(es)
+  - Create a SQL login/password with owner DB permissions
+  - Azure Key Vault
+  - Permissions to create a service principal
+  - Permissions to assign RBAC
+  
 ### Azure Setup
-The first thing which needs to be done is to setup a service principle which azure data factory will use to query the tenant. Steps to create the service principle can be found in this Microsoft document (Make sure to note eh client id and secret as you will need these for later steps).
+
+First, setup a service principal which Azure Data Factory (ADF) will use to query the tenant. Steps to create the service principal can be found in this Microsoft document (Make sure to note the client id and secret as you will need these for later steps).
 
 https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
 
 Assign your service principal permissions to Azure Management API.
 
-Once the service principle is created it will need to be given roles for read permissions across all azure resources at the billing account, as well as billing reader permissions. The process to assign roles to a service principle can be found in the following Microsoft article.
+Once the service principal is created it will need to be given roles for read permissions across all Azure resources at the billing account, as well as billing reader permissions. The process to assign roles to a service principal can be found in the following Microsoft article.
 
 https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-steps 
 
-Next, in Azure Key Value you will need to setup 2 new secrets. One containing the newly created client id of your service principle; the other containing the secret of the service principle.
+Next, in Azure Key Vault, you will need to set up two new secrets: one containing the newly created client id of your service principal; the other containing the secret of the service principal.
+
 https://docs.microsoft.com/en-us/azure/key-vault/secrets/quick-create-portal 
 
-After creating the two secrets make sure to copy both secret identifier URLs as you will need these for deployment.
+After creating the two secrets, make sure to copy both secret identifier URLs as you will need these for deployment.
 https://docs.microsoft.com/en-us/azure/key-vault/general/about-keys-secrets-certificates#objects-identifiers-and-versioning 
 
-Deployment of the resources will be through an Azure ARM template. The published arm template will be located temporarily on GITHUB at: 
+Deployment of the resources will be through an Azure ARM template. The published ARM template will be located temporarily on GitHub at: 
 https://github.com/jmurphygoplanetcom/AzureCostDashboard/tree/adf_publish
-This Azure ARM Template will have a permanent location at a future date after this project is finalized.
+
+This Azure ARM template will have a permanent location at a future date after this project is finalized.
 
 ### Installation
 
@@ -53,9 +59,8 @@ https://github.com/jmurphygoplanetcom/AzureCostDashboard/tree/adf_publish
 
 Note: The following is a list of parameters you will need to assign during deployment.
 - Linked SQL Server
-- Azure key vault secret identifier client id URL
-- Azure key vault secret identifier client secret URL 
-
+- Azure Key Vault secret identifier client id URL
+- Azure Key Vault secret identifier client secret URL 
 
 # SQL Design
 
@@ -119,7 +124,6 @@ https://docs.microsoft.com/en-us/rest/api/billing/2019-10-01-preview/billing-acc
 2.	Retrieve Subscriptions associated to each Billing Account
 https://docs.microsoft.com/en-us/rest/api/resources/subscriptions/list
 
-
 3.	Retrieve Resource Groups associated to each Subscription
 https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/list 
 
@@ -127,14 +131,17 @@ https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/list
 https://docs.microsoft.com/en-us/rest/api/resources/resources/list
 
 5.	Retrieve Costs associated to each Resource – Dimensions are set within the API callout to retrieve daily consumption rates per resource. 
+
 Important! List of Unsupported Subscription Types
--MS-AZR-0145P (CSP)
-MS-AZR-0146P (CSP)
-MS-AZR-159P (CSP)
-MS-AZR-0036P (sponsored)
-MS-AZR-0143P (sponsored)
-MS-AZR-0015P (internal)
-MS-AZR-0144P (DreamSpark)
+
+- MS-AZR-0145P (CSP)
+- MS-AZR-0146P (CSP)
+- MS-AZR-159P (CSP)
+- MS-AZR-0036P (sponsored)
+- MS-AZR-0143P (sponsored)
+- MS-AZR-0015P (internal)
+- MS-AZR-0144P (DreamSpark)
+
 For the above subscription types the cost will always return as zero. To accommodate these subscriptions, we run the following step to try and pull aggregate costs from the subscription.
 https://docs.microsoft.com/en-us/rest/api/cost-management/query/usage 
 
@@ -142,11 +149,13 @@ https://docs.microsoft.com/en-us/rest/api/cost-management/query/usage
 https://docs.microsoft.com/en-us/azure-stack/operator/azure-stack-tenant-resource-usage-api?view=azs-2108 
 
 # Additional Data Flow
-The cost management queries return an array of data which isn’t condusive to being directly populated within the SQL database. To accommodate this, we use an Azure Data Factory Data Flow.
+
+The cost management queries return an array of data which isn’t conducive to being directly populated within the SQL database. To accommodate this, we use an ADF Data Flow.
 
 ![Dataflow](/images/Dataflow1.png)
 
 (Sample of cost data)
+
 ```json
 {
     "id": "subscriptions/89e6ade6-e91a-4152-bf83-9c83a3cb6ae3/resourcegroups/JamesGeneralDevelopment/providers/Microsoft.CostManagement/query/45ee17fd-7b46-4013-8237-1651a4050a41",
@@ -300,16 +309,15 @@ The cost management queries return an array of data which isn’t condusive to b
     }
 }
 ```
-
-
  
--	DataFlowCosts: Extracts the raw JSON data
--	Parse: Parses the JSON into a schema
--	Flatten: Flattens the cost array into a workable dataset
--	Derived Column: Extracts each array position as a cost column
--	Costs: Sink return set for the parsed data
+- DataFlowCosts: Extracts the raw JSON data
+- Parse: Parses the JSON into a schema
+- Flatten: Flattens the cost array into a workable dataset
+- Derived Column: Extracts each array position as a cost column
+- Costs: Sink return set for the parsed data
 
 # Budgets
+
 Budgets can be created to compare and measure costs of a subscription and one or more resource groups. To create a new budget execute the following SQL script.
 
 ```sql
@@ -331,8 +339,9 @@ PROCEDURE spCreateBudget
 )
 ```
 
-# PowerBI Design
-The PowerBi report will display cost management data and enable viewing of data by resource group, billing account and subscriptions.  The report will provide a list view with filters and graphs for data visualization.
+# Power BI Design
+
+The Power BI report will display cost management data and enable viewing of data by resource group, billing account, and subscriptions.  The report will provide a list view with filters and graphs for data visualization.
 
 ![Dashboard](/images/Dashboard1.png)
 
