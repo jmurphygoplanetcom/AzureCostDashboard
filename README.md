@@ -37,8 +37,8 @@ This Azure ARM Template will have a permanent location at a future date after th
 
 After standing up a new data factory instance create the following global parameters:
 - "tenantId" - (string) The GUID of the Azure Tenant
-- "azurekeyvault_client_secret_secretidentifier" - (string) The URL provided by azure key vault for the secret identifier
-- "azurekeyvault_client_id_secretidentifier" - (string) The URL provided by azure key vault for the id identifier
+- "azurekeyvault_client_secret_secretidentifier" - (string) The URL provided by azure key vault for the secret identifier. Note: Please append ?api-version=7.0 at the end of the url.
+- "azurekeyvault_client_id_secretidentifier" - (string) The URL provided by azure key vault for the id identifier. Note: Please append ?api-version=7.0 at the end of the url.
 
 Create the following linked services to your Azure Resources:
 - "AzureKeyVault" (Azure Key Vault)
